@@ -26,11 +26,29 @@ Requires [`zcwilt/forumkit-core`](https://github.com/zcwilt/forumkit-core) and
 - **A schema snapshot** for `forumkit:adopt`. A site's own extra columns are declared with a core
   `SchemaExtension`.
 
+- **Readers** (`CmsContent`): published pages (newest first, optionally by tag), a page by slug
+  or by custom route (a draft page is served only to its preview token), menus, a published
+  reusable block by slug, and media assets by path. Menus are cached under
+  `cms:navigation:{name}` for `navigation_cache_seconds` (default 300) and cleared when a menu is
+  saved. A request that is previewing unpublished changes is served those, through the
+  `PreviewResolver` contract (the default previews nothing).
+- **Menu items for a visitor** (`NavigationItems`): unknown link kinds become plain URLs, URLs
+  are limited to relative paths and http(s), targets to `_self`, `_blank`, `_parent`, `_top`,
+  items the visitor lacks the entitlements for are dropped, and so are empty placeholders. A site
+  registers its own link kinds (a legal page, a named page of the application, an action such as
+  logout) with `NavigationLinkTypes::register()`, giving a resolver from the item's `reference`
+  to a URL.
+- **Block types** (`BlockTypeRegistry`): nineteen generic types ship (raw HTML, hero, image,
+  gallery, card grid, feature list, embed, divider, call-to-action band, stat strip, link grid,
+  logo grid, accordion, icon callout, icon card grid, split info panel, checklist callout,
+  comparison matrix and panel). A site registers its own and aliases for old keys. A stored type
+  nobody knows still loads and is labelled as unknown. Each type says where its media asset ids
+  sit in the block data, which is how `MediaAssetUsage` tells which live blocks use an asset.
+
 ## Still to come
 
-Readers (published pages, menus, reusable blocks, media), a block type registry, the draft,
-variant, version, schedule and preview workflow for pages, menus and reusable blocks, shared
-preview links, and the Filament screens.
+The draft, variant, version, schedule and preview workflow for pages, menus and reusable blocks,
+shared preview links, and the Filament screens (including each block type's form).
 
 ## Install
 
