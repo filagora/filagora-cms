@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace ForumKit\Cms;
 
+use ForumKit\Cms\BlockTypes\BlockTypeRegistry;
+use ForumKit\Cms\BlockTypes\GenericBlockTypes;
+use ForumKit\Cms\Contracts\PreviewResolver;
+use ForumKit\Cms\Navigation\NavigationItems;
+use ForumKit\Cms\Navigation\NavigationLinkTypes;
+use ForumKit\Cms\Services\CmsContent;
+use ForumKit\Cms\Services\MediaAssetUsage;
+use ForumKit\Cms\Support\NoPreview;
 use ForumKit\Core\Modules\Module;
 use ForumKit\Core\Modules\ModuleRegistry;
 use ForumKit\Core\Schema\PackageSchema;
@@ -15,6 +23,21 @@ class CmsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/forumkit-cms.php', 'forumkit-cms');
+
+        $this->app->bindIf(PreviewResolver::class, NoPreview::class);
+        $this->app->singleton(BlockTypeRegistry::class, function (): BlockTypeRegistry {
+            $registry = new BlockTypeRegistry;
+
+            foreach (GenericBlockTypes::all() as $type) {
+                $registry->register($type);
+            }
+
+            return $registry;
+        });
+        $this->app->singleton(NavigationLinkTypes::class);
+        $this->app->singleton(NavigationItems::class);
+        $this->app->singleton(MediaAssetUsage::class);
+        $this->app->scoped(CmsContent::class);
     }
 
     public function boot(): void

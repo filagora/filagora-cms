@@ -20,6 +20,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Navigation cache
+    |--------------------------------------------------------------------------
+    |
+    | Seconds a menu's items are cached (key `cms:navigation:{name}`). Saving or deleting a
+    | menu clears the cache at once, so this is only the upper bound for outside changes.
+    |
+    */
+    'navigation_cache_seconds' => (int) env('FORUMKIT_CMS_NAVIGATION_CACHE_SECONDS', 300),
+
+    /*
+    |--------------------------------------------------------------------------
     | Models
     |--------------------------------------------------------------------------
     |
