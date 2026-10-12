@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ForumKit\Cms\Models;
+
+use ForumKit\Cms\Support\Models;
+use ForumKit\Core\Support\Tables;
+use ForumKit\Core\Support\UserModel;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+
+/**
+ * The working draft of a page or menu: edits accumulate here and reach live content only when
+ * published. One per page or menu; other named variants are parked in the variants table.
+ *
+ * @property int $id
+ * @property int $cms_page_id
+ * @property string $variant_name
+ * @property array<string, mixed> $payload
+ * @property int|null $base_version_id
+ * @property bool $is_dirty
+ * @property Carbon|null $scheduled_publish_at
+ * @property string|null $scheduled_summary
+ * @property int|null $scheduled_by_id
+ * @property int|null $updated_by_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+class CmsPageDraft extends Model
+{
+    protected $fillable = [
+        'cms_page_id',
+        'variant_name',
+        'payload',
+        'base_version_id',
+        'is_dirty',
+        'scheduled_publish_at',
+        'scheduled_summary',
+        'scheduled_by_id',
+        'updated_by_id',
+    ];
+
+    public function getTable(): string
+    {
+        return Tables::name('cms_page_drafts');
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'payload' => 'array',
+            'base_version_id' => 'integer',
+            'is_dirty' => 'boolean',
+            'scheduled_publish_at' => 'datetime',
+        ];
+    }
+
+    /**
+     * @return BelongsTo<Model, $this>
+     */
+    public function page(): BelongsTo
+    {
+        return $this->belongsTo(Models::class('page'), 'cms_page_id');
+    }
+
+    /**
+     * @return BelongsTo<Model, $this>
+     */
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(UserModel::class(), 'updated_by_id');
+    }
+
+    /**
+     * @return BelongsTo<Model, $this>
+     */
+    public function scheduledBy(): BelongsTo
+    {
+        return $this->belongsTo(UserModel::class(), 'scheduled_by_id');
+    }
+}

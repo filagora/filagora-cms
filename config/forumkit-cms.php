@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+use ForumKit\Cms\Models\CmsBlock;
+use ForumKit\Cms\Models\CmsBlockVersion;
+use ForumKit\Cms\Models\CmsMediaAsset;
+use ForumKit\Cms\Models\CmsNavigation;
+use ForumKit\Cms\Models\CmsNavigationDraft;
+use ForumKit\Cms\Models\CmsNavigationDraftVariant;
+use ForumKit\Cms\Models\CmsNavigationVersion;
+use ForumKit\Cms\Models\CmsPage;
+use ForumKit\Cms\Models\CmsPageDraft;
+use ForumKit\Cms\Models\CmsPageDraftVariant;
+use ForumKit\Cms\Models\CmsPageVersion;
+use ForumKit\Cms\Models\CmsPreviewShare;
+use ForumKit\Cms\Models\CmsTag;
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Models
+    |--------------------------------------------------------------------------
+    |
+    | The classes this package uses for its tables. Point a key at your own subclass to
+    | replace one (here, or under `forumkit.models.<key>`, which wins). Subclass the package
+    | model; the package always asks for the class through its Models helper, so relations
+    | and queries follow your class.
+    |
+    */
+    'models' => [
+        'page' => CmsPage::class,
+        'block' => CmsBlock::class,
+        'block_version' => CmsBlockVersion::class,
+        'page_version' => CmsPageVersion::class,
+        'page_draft' => CmsPageDraft::class,
+        'page_draft_variant' => CmsPageDraftVariant::class,
+        'navigation' => CmsNavigation::class,
+        'navigation_version' => CmsNavigationVersion::class,
+        'navigation_draft' => CmsNavigationDraft::class,
+        'navigation_draft_variant' => CmsNavigationDraftVariant::class,
+        'tag' => CmsTag::class,
+        'media_asset' => CmsMediaAsset::class,
+        'preview_share' => CmsPreviewShare::class,
+    ],
+
+];
