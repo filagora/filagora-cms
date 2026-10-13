@@ -5,6 +5,8 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+- Menu staged-edit workflow (`NavigationDrafts`): working draft, named variants, discard, stale check, publish with a version, restore, schedule, `itemsForVariant`; `NavigationDraftDiff`; event `CmsNavigationPublished`. `forumkit:cms:publish-due` now publishes due menus too.
+
 - Page staged-edit workflow (`PageDrafts`): working draft, named variants (create, switch, rename, delete), discard, stale check, publish with a version, restore a version to the draft, scheduled publishing, in-memory preview of the draft or any variant. `PageVersioning` snapshots; `PageDraftDiff` describes what publishing would change.
 - Reusable block workflow (`BlockDrafts`): staged copy, pending-change check, publish with a version, restore.
 - Events `CmsPagePublished` and `CmsBlockPublished`; `PageDrafts::isPublishing()` for listeners that react to each saved row.

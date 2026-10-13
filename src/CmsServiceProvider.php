@@ -13,6 +13,8 @@ use ForumKit\Cms\Navigation\NavigationLinkTypes;
 use ForumKit\Cms\Services\BlockDrafts;
 use ForumKit\Cms\Services\CmsContent;
 use ForumKit\Cms\Services\MediaAssetUsage;
+use ForumKit\Cms\Services\NavigationDraftDiff;
+use ForumKit\Cms\Services\NavigationDrafts;
 use ForumKit\Cms\Services\PageDraftDiff;
 use ForumKit\Cms\Services\PageDrafts;
 use ForumKit\Cms\Services\PageVersioning;
@@ -47,6 +49,8 @@ class CmsServiceProvider extends ServiceProvider
         $this->app->singleton(PageDrafts::class);
         $this->app->singleton(PageDraftDiff::class);
         $this->app->singleton(BlockDrafts::class);
+        $this->app->singleton(NavigationDrafts::class);
+        $this->app->singleton(NavigationDraftDiff::class);
     }
 
     public function boot(): void
