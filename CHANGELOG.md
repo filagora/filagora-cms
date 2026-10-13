@@ -5,6 +5,9 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+- Preview session (`PreviewSession`, the `PreviewResolver` implementation), shared preview links (`PreviewShares`: create, open, revoke, landing page) and the `MarkPreviewResponsesUncacheable` middleware (added to the `web` group unless switched off).
+- Abilities `forumkit.cms.manage` and `forumkit.cms.preview`, mapped in `forumkit-cms.gates` and declared as entitlements.
+
 - Menu staged-edit workflow (`NavigationDrafts`): working draft, named variants, discard, stale check, publish with a version, restore, schedule, `itemsForVariant`; `NavigationDraftDiff`; event `CmsNavigationPublished`. `forumkit:cms:publish-due` now publishes due menus too.
 
 - Page staged-edit workflow (`PageDrafts`): working draft, named variants (create, switch, rename, delete), discard, stale check, publish with a version, restore a version to the draft, scheduled publishing, in-memory preview of the draft or any variant. `PageVersioning` snapshots; `PageDraftDiff` describes what publishing would change.

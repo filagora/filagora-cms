@@ -75,9 +75,28 @@ Requires [`zcwilt/forumkit-core`](https://github.com/zcwilt/forumkit-core) and
 
 These services do not check who may call them; the Filament screens do.
 
+- **Previews.** `PreviewSession` is the `PreviewResolver` the readers use, so a browser that is
+  previewing sees draft menus and pages at their normal public addresses while everything else
+  shows live content. Two things start a preview: an editor adding items (`addPage`,
+  `addNavigation`; each served from its working draft; needs `forumkit.cms.manage` or
+  `forumkit.cms.preview`), or a **shared preview link**.
+  - `PreviewShares::create()` bundles chosen menus and pages, each pinned to a named variant, with
+    an expiry in days and a label. The link's token is long, random and never serialised.
+    `open($token, $session)` starts the preview for whoever holds it and counts the open;
+    `revoke()` ends it, and so does expiry, at the next request. The holder previews in their own
+    browser session; nothing is made public. `landingPage()` says where to send them.
+  - `items()` describes what is being previewed (for a banner) and `currentSelection()` bundles an
+    editor's own preview for sharing.
+  - `MarkPreviewResponsesUncacheable` marks every response `no-store, private` and
+    `noindex, nofollow` while a preview is in effect. It is added to the `web` group unless you
+    set `forumkit-cms.preview.uncacheable_middleware` to false.
+  - The routes, the controllers and the banner are yours: this package has no frontend.
+- **Two abilities**, `forumkit.cms.manage` and `forumkit.cms.preview`, mapped to entitlements in
+  `forumkit-cms.gates`.
+
 ## Still to come
 
-The preview session and shared preview links, and the Filament screens (including each block type's form).
+The Filament screens (including each block type's form).
 
 ## Install
 

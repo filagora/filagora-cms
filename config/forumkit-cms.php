@@ -56,4 +56,31 @@ return [
         'preview_share' => CmsPreviewShare::class,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Gate abilities
+    |--------------------------------------------------------------------------
+    |
+    | Maps each CMS ability to the entitlement that allows it. Point an ability at a different
+    | entitlement to use your own keys.
+    |
+    */
+    'gates' => [
+        'forumkit.cms.manage' => 'forumkit.cms.manage',
+        'forumkit.cms.preview' => 'forumkit.cms.preview',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Previews
+    |--------------------------------------------------------------------------
+    |
+    | `uncacheable_middleware`: add the middleware that marks every response uncacheable and
+    | noindex while a preview is in effect to the `web` group.
+    |
+    */
+    'preview' => [
+        'uncacheable_middleware' => true,
+    ],
+
 ];
