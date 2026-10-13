@@ -6,11 +6,16 @@ namespace ForumKit\Cms;
 
 use ForumKit\Cms\BlockTypes\BlockTypeRegistry;
 use ForumKit\Cms\BlockTypes\GenericBlockTypes;
+use ForumKit\Cms\Console\PublishDueCommand;
 use ForumKit\Cms\Contracts\PreviewResolver;
 use ForumKit\Cms\Navigation\NavigationItems;
 use ForumKit\Cms\Navigation\NavigationLinkTypes;
+use ForumKit\Cms\Services\BlockDrafts;
 use ForumKit\Cms\Services\CmsContent;
 use ForumKit\Cms\Services\MediaAssetUsage;
+use ForumKit\Cms\Services\PageDraftDiff;
+use ForumKit\Cms\Services\PageDrafts;
+use ForumKit\Cms\Services\PageVersioning;
 use ForumKit\Cms\Support\NoPreview;
 use ForumKit\Core\Modules\Module;
 use ForumKit\Core\Modules\ModuleRegistry;
@@ -38,6 +43,10 @@ class CmsServiceProvider extends ServiceProvider
         $this->app->singleton(NavigationItems::class);
         $this->app->singleton(MediaAssetUsage::class);
         $this->app->scoped(CmsContent::class);
+        $this->app->singleton(PageVersioning::class);
+        $this->app->singleton(PageDrafts::class);
+        $this->app->singleton(PageDraftDiff::class);
+        $this->app->singleton(BlockDrafts::class);
     }
 
     public function boot(): void
@@ -55,6 +64,8 @@ class CmsServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         if ($this->app->runningInConsole()) {
+            $this->commands([PublishDueCommand::class]);
+
             $this->publishes([
                 __DIR__.'/../config/forumkit-cms.php' => config_path('forumkit-cms.php'),
             ], 'forumkit-cms-config');

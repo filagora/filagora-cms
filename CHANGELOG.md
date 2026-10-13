@@ -5,6 +5,12 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+- Page staged-edit workflow (`PageDrafts`): working draft, named variants (create, switch, rename, delete), discard, stale check, publish with a version, restore a version to the draft, scheduled publishing, in-memory preview of the draft or any variant. `PageVersioning` snapshots; `PageDraftDiff` describes what publishing would change.
+- Reusable block workflow (`BlockDrafts`): staged copy, pending-change check, publish with a version, restore.
+- Events `CmsPagePublished` and `CmsBlockPublished`; `PageDrafts::isPublishing()` for listeners that react to each saved row.
+- Command `forumkit:cms:publish-due`.
+- `DraftOperationFailed` (carries the HTTP status a frontend would answer with).
+
 - `CmsContent` readers: published pages, by slug and by custom route (preview token for drafts), menus with a cache, reusable blocks, media lookups.
 - `NavigationItems` and `NavigationLinkTypes`: visitor-safe menu items and site-registered link kinds.
 - `BlockTypeRegistry` with nineteen generic block types, aliases, unknown-type handling and media paths; `MediaAssetUsage`.

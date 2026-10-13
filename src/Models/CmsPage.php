@@ -76,20 +76,22 @@ class CmsPage extends Model
     /**
      * Live blocks, in order. Staged copies are hidden by the block model's scope.
      *
-     * @return HasMany<Model, $this>
+     * @return HasMany<CmsBlock, $this>
      */
     public function blocks(): HasMany
     {
+        /** @var HasMany<CmsBlock, $this> */
         return $this->hasMany(Models::class('block'), 'cms_page_id')->orderBy('sort_order');
     }
 
     /**
      * Staged working copies of this page's blocks.
      *
-     * @return HasMany<Model, $this>
+     * @return HasMany<CmsBlock, $this>
      */
     public function draftBlocks(): HasMany
     {
+        /** @var HasMany<CmsBlock, $this> */
         return $this->hasMany(Models::class('block'), 'cms_page_id')
             ->withoutGlobalScopes()
             ->withAttributes(['is_draft' => true])
@@ -98,36 +100,40 @@ class CmsPage extends Model
     }
 
     /**
-     * @return HasOne<Model, $this>
+     * @return HasOne<CmsPageDraft, $this>
      */
     public function draft(): HasOne
     {
+        /** @var HasOne<CmsPageDraft, $this> */
         return $this->hasOne(Models::class('page_draft'), 'cms_page_id');
     }
 
     /**
      * Named drafts parked while another variant is the working draft.
      *
-     * @return HasMany<Model, $this>
+     * @return HasMany<CmsPageDraftVariant, $this>
      */
     public function draftVariants(): HasMany
     {
+        /** @var HasMany<CmsPageDraftVariant, $this> */
         return $this->hasMany(Models::class('page_draft_variant'), 'cms_page_id')->orderBy('name');
     }
 
     /**
-     * @return BelongsToMany<Model, $this>
+     * @return BelongsToMany<CmsTag, $this>
      */
     public function tags(): BelongsToMany
     {
+        /** @var BelongsToMany<CmsTag, $this> */
         return $this->belongsToMany(Models::class('tag'), Tables::name('cms_page_tag'), 'cms_page_id', 'cms_tag_id');
     }
 
     /**
-     * @return HasMany<Model, $this>
+     * @return HasMany<CmsPageVersion, $this>
      */
     public function versions(): HasMany
     {
+        /** @var HasMany<CmsPageVersion, $this> */
         return $this->hasMany(Models::class('page_version'), 'cms_page_id')->orderByDesc('version_number');
     }
 

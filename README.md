@@ -45,10 +45,33 @@ Requires [`zcwilt/forumkit-core`](https://github.com/zcwilt/forumkit-core) and
   nobody knows still loads and is labelled as unknown. Each type says where its media asset ids
   sit in the block data, which is how `MediaAssetUsage` tells which live blocks use an asset.
 
+- **The staged-edit workflow for pages** (`PageDrafts`). Edits go into a working draft (the page
+  fields, its tags, and a staged copy of each block) and reach live content only on publish.
+  - *Variants*: a page has one working draft; others are parked beside it. Start a variant from
+    the current draft or from live, switch, rename and delete them. Names are unique within a
+    page, ignoring case. A draft with a schedule cannot be switched away from.
+  - *Publish* applies the fields, tags and blocks (edited, added and removed) in one transaction,
+    refuses a slug or custom route another page uses, records a numbered version and dispatches
+    `CmsPagePublished`. `PageDrafts::isPublishing()` is true meanwhile, so listeners that react to
+    every saved row can wait for the event.
+  - *Versions*: `PageVersioning` snapshots a page; `restoreVersionToDraft` loads one into the
+    draft without touching live content; `isStale` says the page was published since the draft
+    began.
+  - *Schedule*: `schedule`, `cancelSchedule` and `publishDue`, run by
+    `php artisan forumkit:cms:publish-due` (schedule it every minute). A draft that can no longer
+    publish has its schedule cleared and the problem reported; the rest still go out.
+  - *Preview*: `previewPage` and `previewPageVariant` build an unsaved in-memory copy as it would
+    look once published.
+  - `PageDraftDiff` describes what publishing would change, field by field, tags and blocks.
+- **The same for reusable blocks** (`BlockDrafts`): a hidden staged copy, pending-change check,
+  publish with a version and a `CmsBlockPublished` event, restore from a version.
+
+These services do not check who may call them; the Filament screens do.
+
 ## Still to come
 
-The draft, variant, version, schedule and preview workflow for pages, menus and reusable blocks,
-shared preview links, and the Filament screens (including each block type's form).
+The same workflow for menus, the preview session and shared preview links, and the Filament
+screens (including each block type's form).
 
 ## Install
 
