@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Concerns;
+namespace Filagora\Cms\Filament\Concerns;
 
-use ForumKit\Cms\Support\Abilities;
-use ForumKit\Entitlements\Filament\Concerns\GatedByAbility;
+use Filagora\Cms\Support\Abilities;
+use Filagora\Entitlements\Filament\Concerns\GatedByAbility;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 /**
- * Every CMS screen needs the `forumkit.cms.manage` ability; nothing is allowed without it.
+ * Every CMS screen needs the `filagora.cms.manage` ability; nothing is allowed without it.
  */
 trait GatedByManage
 {

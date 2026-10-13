@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsBlockVersion;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsNavigationDraft;
-use ForumKit\Cms\Models\CmsNavigationDraftVariant;
-use ForumKit\Cms\Models\CmsNavigationVersion;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPageDraft;
-use ForumKit\Cms\Models\CmsPageDraftVariant;
-use ForumKit\Cms\Models\CmsPageVersion;
-use ForumKit\Cms\Models\CmsPreviewShare;
-use ForumKit\Cms\Models\CmsTag;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsBlockVersion;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsNavigationDraft;
+use Filagora\Cms\Models\CmsNavigationDraftVariant;
+use Filagora\Cms\Models\CmsNavigationVersion;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPageDraft;
+use Filagora\Cms\Models\CmsPageDraftVariant;
+use Filagora\Cms\Models\CmsPageVersion;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Models\CmsTag;
 
 return [
 
@@ -27,7 +27,7 @@ return [
     | menu clears the cache at once, so this is only the upper bound for outside changes.
     |
     */
-    'navigation_cache_seconds' => (int) env('FORUMKIT_CMS_NAVIGATION_CACHE_SECONDS', 300),
+    'navigation_cache_seconds' => (int) env('FILAGORA_CMS_NAVIGATION_CACHE_SECONDS', 300),
 
     /*
     |--------------------------------------------------------------------------
@@ -35,7 +35,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | The classes this package uses for its tables. Point a key at your own subclass to
-    | replace one (here, or under `forumkit.models.<key>`, which wins). Subclass the package
+    | replace one (here, or under `filagora.models.<key>`, which wins). Subclass the package
     | model; the package always asks for the class through its Models helper, so relations
     | and queries follow your class.
     |
@@ -66,8 +66,8 @@ return [
     |
     */
     'gates' => [
-        'forumkit.cms.manage' => 'forumkit.cms.manage',
-        'forumkit.cms.preview' => 'forumkit.cms.preview',
+        'filagora.cms.manage' => 'filagora.cms.manage',
+        'filagora.cms.preview' => 'filagora.cms.preview',
     ],
 
     /*

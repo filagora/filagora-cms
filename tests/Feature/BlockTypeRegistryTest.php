@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\BlockTypes\BlockType;
-use ForumKit\Cms\BlockTypes\BlockTypeRegistry;
-use ForumKit\Cms\BlockTypes\GenericBlockTypes;
+use Filagora\Cms\BlockTypes\BlockType;
+use Filagora\Cms\BlockTypes\BlockTypeRegistry;
+use Filagora\Cms\BlockTypes\GenericBlockTypes;
 
 enum TestBlockKind: string
 {

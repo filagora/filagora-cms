@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Events\CmsPagePublished;
-use ForumKit\Cms\Exceptions\DraftOperationFailed;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPageDraft;
-use ForumKit\Cms\Models\CmsPageDraftVariant;
-use ForumKit\Cms\Models\CmsPageVersion;
-use ForumKit\Cms\Models\CmsTag;
-use ForumKit\Cms\Services\PageDrafts;
-use ForumKit\Cms\Services\PageVersioning;
-use ForumKit\Cms\Tests\Support\TestUser;
+use Filagora\Cms\Events\CmsPagePublished;
+use Filagora\Cms\Exceptions\DraftOperationFailed;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPageDraft;
+use Filagora\Cms\Models\CmsPageDraftVariant;
+use Filagora\Cms\Models\CmsPageVersion;
+use Filagora\Cms\Models\CmsTag;
+use Filagora\Cms\Services\PageDrafts;
+use Filagora\Cms\Services\PageVersioning;
+use Filagora\Cms\Tests\Support\TestUser;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
 
@@ -465,8 +465,8 @@ it('lets the command publish what is due and say how many', function () {
     drafts()->saveDraftFields($page, ['title' => 'x']);
     drafts()->schedule($page, now()->subMinute());
 
-    $this->artisan('forumkit:cms:publish-due')->expectsOutputToContain('Published 1 scheduled CMS page(s).')->assertExitCode(0);
-    $this->artisan('forumkit:cms:publish-due')->expectsOutputToContain('Published 0 scheduled CMS page(s).')->assertExitCode(0);
+    $this->artisan('filagora:cms:publish-due')->expectsOutputToContain('Published 1 scheduled CMS page(s).')->assertExitCode(0);
+    $this->artisan('filagora:cms:publish-due')->expectsOutputToContain('Published 0 scheduled CMS page(s).')->assertExitCode(0);
 });
 
 it('cancels a schedule', function () {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Http\Middleware;
+namespace Filagora\Cms\Http\Middleware;
 
 use Closure;
-use ForumKit\Cms\Preview\PreviewSession;
+use Filagora\Cms\Preview\PreviewSession;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 

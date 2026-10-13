@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsPages\Schemas;
+namespace Filagora\Cms\Filament\Resources\CmsPages\Schemas;
 
+use Filagora\Cms\Filament\Resources\CmsPages\Pages\EditCmsPage;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Support\Models;
+use Filagora\Cms\Support\WorkflowLabels;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -14,10 +18,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
-use ForumKit\Cms\Filament\Resources\CmsPages\Pages\EditCmsPage;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Support\Models;
-use ForumKit\Cms\Support\WorkflowLabels;
 use Illuminate\Support\Str;
 
 class CmsPageForm
@@ -33,11 +33,11 @@ class CmsPageForm
                         self::seoSection(),
                     ]),
                     Grid::make(1)->schema([
-                        View::make('forumkit-cms::filament.pending-changes')
+                        View::make('filagora-cms::filament.pending-changes')
                             ->viewData(['record' => $schema->getRecord()])
                             ->visible(fn (?CmsPage $record): bool => $record !== null),
                         self::publishingSection(),
-                        View::make('forumkit-cms::filament.page-blocks-panel')
+                        View::make('filagora-cms::filament.page-blocks-panel')
                             ->viewData(['record' => $schema->getRecord(), 'pageClass' => EditCmsPage::class])
                             ->visible(fn (?CmsPage $record): bool => $record !== null),
                     ]),

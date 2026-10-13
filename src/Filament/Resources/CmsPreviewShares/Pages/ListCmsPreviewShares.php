@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsPreviewShares\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsPreviewShares\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsPreviewShares\CmsPreviewShareResource;
 use Filament\Resources\Pages\ListRecords;
-use ForumKit\Cms\Filament\Resources\CmsPreviewShares\CmsPreviewShareResource;
 
 class ListCmsPreviewShares extends ListRecords
 {

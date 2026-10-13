@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Navigation\NavigationItems;
-use ForumKit\Cms\Navigation\NavigationLinkTypes;
-use ForumKit\Cms\Tests\Support\TestUser;
-use ForumKit\Entitlements\Models\UserEntitlementGrant;
-use ForumKit\Entitlements\Services\EntitlementResolver;
+use Filagora\Cms\Navigation\NavigationItems;
+use Filagora\Cms\Navigation\NavigationLinkTypes;
+use Filagora\Cms\Tests\Support\TestUser;
+use Filagora\Entitlements\Models\UserEntitlementGrant;
+use Filagora\Entitlements\Services\EntitlementResolver;
 use Illuminate\Support\Facades\Log;
 
 use function Pest\Laravel\actingAs;

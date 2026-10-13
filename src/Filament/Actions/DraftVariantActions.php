@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Actions;
+namespace Filagora\Cms\Filament\Actions;
 
 use Closure;
+use Filagora\Cms\Exceptions\DraftOperationFailed;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
-use ForumKit\Cms\Exceptions\DraftOperationFailed;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsMediaAssets\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsMediaAssets\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
+use Filagora\Cms\Media\MediaAssets;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Services\MediaAssetUsage;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
-use ForumKit\Cms\Media\MediaAssets;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Services\MediaAssetUsage;
 
 class EditCmsMediaAsset extends EditRecord
 {

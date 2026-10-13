@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Media;
+namespace Filagora\Cms\Media;
 
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Support\Models;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Support\Models;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Tests\Support;
+namespace Filagora\Cms\Tests\Support;
 
 use Illuminate\Support\ServiceProvider;
 

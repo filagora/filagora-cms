@@ -2,38 +2,38 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms;
+namespace Filagora\Cms;
 
-use ForumKit\Cms\BlockTypes\BlockTypeRegistry;
-use ForumKit\Cms\BlockTypes\GenericBlockTypes;
-use ForumKit\Cms\Console\PublishDueCommand;
-use ForumKit\Cms\Contracts\PageUrlResolver;
-use ForumKit\Cms\Contracts\PreviewResolver;
-use ForumKit\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
-use ForumKit\Cms\Media\MediaAssets;
-use ForumKit\Cms\Navigation\NavigationItems;
-use ForumKit\Cms\Navigation\NavigationLinkTypes;
-use ForumKit\Cms\Preview\PreviewSession;
-use ForumKit\Cms\Preview\PreviewShares;
-use ForumKit\Cms\Services\BlockDrafts;
-use ForumKit\Cms\Services\CmsContent;
-use ForumKit\Cms\Services\MediaAssetUsage;
-use ForumKit\Cms\Services\NavigationDraftDiff;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Services\PageDraftDiff;
-use ForumKit\Cms\Services\PageDrafts;
-use ForumKit\Cms\Services\PageVersioning;
-use ForumKit\Cms\Support\DefaultPageUrl;
-use ForumKit\Cms\Support\WorkflowLabels;
-use ForumKit\Core\Modules\Module;
-use ForumKit\Core\Modules\ModuleRegistry;
-use ForumKit\Core\Navigation\NavigationGroupDefinition;
-use ForumKit\Core\Navigation\NavigationGroupRegistry;
-use ForumKit\Core\Schema\PackageSchema;
-use ForumKit\Core\Schema\SchemaRegistry;
-use ForumKit\Entitlements\Registry\Definition;
-use ForumKit\Entitlements\Registry\EntitlementRegistry;
-use ForumKit\Entitlements\Services\AuthorizationService;
+use Filagora\Cms\BlockTypes\BlockTypeRegistry;
+use Filagora\Cms\BlockTypes\GenericBlockTypes;
+use Filagora\Cms\Console\PublishDueCommand;
+use Filagora\Cms\Contracts\PageUrlResolver;
+use Filagora\Cms\Contracts\PreviewResolver;
+use Filagora\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
+use Filagora\Cms\Media\MediaAssets;
+use Filagora\Cms\Navigation\NavigationItems;
+use Filagora\Cms\Navigation\NavigationLinkTypes;
+use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Preview\PreviewShares;
+use Filagora\Cms\Services\BlockDrafts;
+use Filagora\Cms\Services\CmsContent;
+use Filagora\Cms\Services\MediaAssetUsage;
+use Filagora\Cms\Services\NavigationDraftDiff;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Services\PageDraftDiff;
+use Filagora\Cms\Services\PageDrafts;
+use Filagora\Cms\Services\PageVersioning;
+use Filagora\Cms\Support\DefaultPageUrl;
+use Filagora\Cms\Support\WorkflowLabels;
+use Filagora\Core\Modules\Module;
+use Filagora\Core\Modules\ModuleRegistry;
+use Filagora\Core\Navigation\NavigationGroupDefinition;
+use Filagora\Core\Navigation\NavigationGroupRegistry;
+use Filagora\Core\Schema\PackageSchema;
+use Filagora\Core\Schema\SchemaRegistry;
+use Filagora\Entitlements\Registry\Definition;
+use Filagora\Entitlements\Registry\EntitlementRegistry;
+use Filagora\Entitlements\Services\AuthorizationService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Gate;
@@ -43,7 +43,7 @@ class CmsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/forumkit-cms.php', 'forumkit-cms');
+        $this->mergeConfigFrom(__DIR__.'/../config/filagora-cms.php', 'filagora-cms');
 
         $this->app->scoped(PreviewSession::class);
         $this->app->bindIf(PreviewResolver::class, PreviewSession::class);
@@ -75,7 +75,7 @@ class CmsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->make(ModuleRegistry::class)->register(
-            new Module('cms', 'ForumKit CMS', 'zcwilt/forumkit-cms', requires: ['core', 'entitlements']),
+            new Module('cms', 'Filagora CMS', 'filagora/filagora-cms', requires: ['core', 'entitlements']),
         );
 
         $this->app->make(SchemaRegistry::class)->register(
@@ -87,16 +87,16 @@ class CmsServiceProvider extends ServiceProvider
         $this->defineGates();
         $this->registerPreviewMiddleware();
 
-        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'forumkit-cms');
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'forumkit-cms');
+        $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'filagora-cms');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'filagora-cms');
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         if ($this->app->runningInConsole()) {
             $this->commands([PublishDueCommand::class]);
 
             $this->publishes([
-                __DIR__.'/../config/forumkit-cms.php' => config_path('forumkit-cms.php'),
-            ], 'forumkit-cms-config');
+                __DIR__.'/../config/filagora-cms.php' => config_path('filagora-cms.php'),
+            ], 'filagora-cms-config');
         }
     }
 
@@ -104,7 +104,7 @@ class CmsServiceProvider extends ServiceProvider
     {
         $registry = $this->app->make(EntitlementRegistry::class);
 
-        foreach (config('forumkit-cms.gates', []) as $entitlement) {
+        foreach (config('filagora-cms.gates', []) as $entitlement) {
             if (is_string($entitlement) && $entitlement !== '') {
                 $registry->define(new Definition($entitlement, wildcardChildren: false));
             }
@@ -113,7 +113,7 @@ class CmsServiceProvider extends ServiceProvider
 
     private function defineGates(): void
     {
-        foreach (config('forumkit-cms.gates', []) as $ability => $entitlement) {
+        foreach (config('filagora-cms.gates', []) as $ability => $entitlement) {
             if (! is_string($ability) || ! is_string($entitlement)) {
                 continue;
             }
@@ -127,7 +127,7 @@ class CmsServiceProvider extends ServiceProvider
      */
     private function registerPreviewMiddleware(): void
     {
-        if (config('forumkit-cms.preview.uncacheable_middleware', true)) {
+        if (config('filagora-cms.preview.uncacheable_middleware', true)) {
             $this->app->make(Router::class)->pushMiddlewareToGroup('web', MarkPreviewResponsesUncacheable::class);
         }
     }
@@ -136,7 +136,7 @@ class CmsServiceProvider extends ServiceProvider
     {
         $this->app->make(NavigationGroupRegistry::class)->register(new NavigationGroupDefinition(
             key: 'cms',
-            label: fn (): string => __('forumkit-cms::messages.navigation_groups.cms'),
+            label: fn (): string => __('filagora-cms::messages.navigation_groups.cms'),
             icon: 'heroicon-o-document-duplicate',
             sort: 40,
         ));

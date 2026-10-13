@@ -1,4 +1,4 @@
-name: forumkit-cms
+name: filagora-cms
 type: php
 docroot: .
 php_version: "8.4"

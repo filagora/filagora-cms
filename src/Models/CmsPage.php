@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Models;
+namespace Filagora\Cms\Models;
 
-use ForumKit\Cms\Enums\CmsPageStatus;
-use ForumKit\Cms\Support\Models;
-use ForumKit\Core\Support\Tables;
+use Filagora\Cms\Enums\CmsPageStatus;
+use Filagora\Cms\Support\Models;
+use Filagora\Core\Support\Tables;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;

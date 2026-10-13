@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Contracts;
+namespace Filagora\Cms\Contracts;
 
-use ForumKit\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPage;
 
 /**
  * The public URL a page is served at. The package has no routes of its own, so the host says

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsPages\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsPages\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsPages\CmsPageResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use ForumKit\Cms\Filament\Resources\CmsPages\CmsPageResource;
 
 class ListCmsPages extends ListRecords
 {

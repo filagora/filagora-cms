@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsPages\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsPages\Pages;
 
+use Filagora\Cms\Enums\CmsPageStatus;
+use Filagora\Cms\Filament\Resources\CmsPages\CmsPageResource;
+use Filagora\Cms\Models\CmsPage;
 use Filament\Resources\Pages\CreateRecord;
-use ForumKit\Cms\Enums\CmsPageStatus;
-use ForumKit\Cms\Filament\Resources\CmsPages\CmsPageResource;
-use ForumKit\Cms\Models\CmsPage;
 use Illuminate\Database\Eloquent\Model;
 
 class CreateCmsPage extends CreateRecord

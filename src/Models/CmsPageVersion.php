@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Models;
+namespace Filagora\Cms\Models;
 
-use ForumKit\Cms\Support\Models;
-use ForumKit\Core\Support\Tables;
-use ForumKit\Core\Support\UserModel;
+use Filagora\Cms\Support\Models;
+use Filagora\Core\Support\Tables;
+use Filagora\Core\Support\UserModel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;

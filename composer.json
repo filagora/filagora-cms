@@ -1,6 +1,6 @@
 {
-    "name": "zcwilt/forumkit-cms",
-    "description": "Pages, blocks, navigations, media and a draft, version, schedule and preview workflow for ForumKit.",
+    "name": "filagora/filagora-cms",
+    "description": "Pages, blocks, navigations, media and a draft, version, schedule and preview workflow for Filagora.",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -8,14 +8,14 @@
         "filament",
         "filament-plugin",
         "forum",
-        "forumkit",
+        "filagora",
         "cms"
     ],
     "require": {
         "php": "^8.4",
         "filament/filament": "^5.0",
-        "zcwilt/forumkit-core": "^0.1.3",
-        "zcwilt/forumkit-entitlements": "^0.1.1"
+        "filagora/filagora-core": "^0.2",
+        "filagora/filagora-entitlements": "^0.2"
     },
     "require-dev": {
         "larastan/larastan": "^3.0",
@@ -26,12 +26,12 @@
     },
     "autoload": {
         "psr-4": {
-            "ForumKit\\Cms\\": "src/"
+            "Filagora\\Cms\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "ForumKit\\Cms\\Tests\\": "tests/"
+            "Filagora\\Cms\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -42,7 +42,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "ForumKit\\Cms\\CmsServiceProvider"
+                "Filagora\\Cms\\CmsServiceProvider"
             ]
         }
     },

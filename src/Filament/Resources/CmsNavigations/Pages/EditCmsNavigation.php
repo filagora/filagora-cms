@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsNavigations\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsNavigations\Pages;
 
+use Filagora\Cms\Exceptions\DraftOperationFailed;
+use Filagora\Cms\Filament\Actions\DraftVariantActions;
+use Filagora\Cms\Filament\Actions\SharePreviewLinkAction;
+use Filagora\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Services\NavigationDraftDiff;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Support\WorkflowLabels;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use ForumKit\Cms\Exceptions\DraftOperationFailed;
-use ForumKit\Cms\Filament\Actions\DraftVariantActions;
-use ForumKit\Cms\Filament\Actions\SharePreviewLinkAction;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Preview\PreviewSession;
-use ForumKit\Cms\Services\NavigationDraftDiff;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Support\WorkflowLabels;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

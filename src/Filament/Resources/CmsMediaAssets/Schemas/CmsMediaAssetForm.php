@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsMediaAssets\Schemas;
+namespace Filagora\Cms\Filament\Resources\CmsMediaAssets\Schemas;
 
+use Filagora\Cms\Media\MediaAssets;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -11,7 +12,6 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use ForumKit\Cms\Media\MediaAssets;
 
 class CmsMediaAssetForm
 {

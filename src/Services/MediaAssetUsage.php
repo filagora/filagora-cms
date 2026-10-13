@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Services;
+namespace Filagora\Cms\Services;
 
-use ForumKit\Cms\BlockTypes\BlockTypeRegistry;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Support\Models;
+use Filagora\Cms\BlockTypes\BlockTypeRegistry;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Support\Models;
 
 /**
  * Which live blocks use a media asset, found through the media paths each block type declares.

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Actions;
+namespace Filagora\Cms\Filament\Actions;
 
 use Closure;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Preview\PreviewShares;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Preview\PreviewSession;
-use ForumKit\Cms\Preview\PreviewShares;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 
@@ -80,7 +80,7 @@ final class SharePreviewLinkAction
                 Notification::make()
                     ->success()
                     ->title('Preview link created')
-                    ->body($share->url() ?? 'Define the route named in forumkit-cms.preview.share_route to open links. Token: '.$share->getRawOriginal('token'))
+                    ->body($share->url() ?? 'Define the route named in filagora-cms.preview.share_route to open links. Token: '.$share->getRawOriginal('token'))
                     ->persistent()
                     ->send();
             });

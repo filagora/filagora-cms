@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsNavigations\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsNavigations\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
 use Filament\Resources\Pages\CreateRecord;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
 
 class CreateCmsNavigation extends CreateRecord
 {

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Events\CmsBlockPublished;
-use ForumKit\Cms\Exceptions\DraftOperationFailed;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsBlockVersion;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsTag;
-use ForumKit\Cms\Services\BlockDrafts;
-use ForumKit\Cms\Services\PageDraftDiff;
-use ForumKit\Cms\Services\PageDrafts;
-use ForumKit\Cms\Tests\Support\TestUser;
+use Filagora\Cms\Events\CmsBlockPublished;
+use Filagora\Cms\Exceptions\DraftOperationFailed;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsBlockVersion;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsTag;
+use Filagora\Cms\Services\BlockDrafts;
+use Filagora\Cms\Services\PageDraftDiff;
+use Filagora\Cms\Services\PageDrafts;
+use Filagora\Cms\Tests\Support\TestUser;
 use Illuminate\Support\Facades\Event;
 
 function reusable(array $attributes = []): CmsBlock

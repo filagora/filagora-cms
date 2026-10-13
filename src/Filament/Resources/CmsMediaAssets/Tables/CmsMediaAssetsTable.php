@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsMediaAssets\Tables;
+namespace Filagora\Cms\Filament\Resources\CmsMediaAssets\Tables;
 
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Services\MediaAssetUsage;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
@@ -11,8 +13,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Services\MediaAssetUsage;
 use Illuminate\Database\Eloquent\Builder;
 
 class CmsMediaAssetsTable

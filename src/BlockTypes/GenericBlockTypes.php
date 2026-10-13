@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\BlockTypes;
+namespace Filagora\Cms\BlockTypes;
 
 /**
  * The block types any site can use. Site-specific types and old aliases are registered by the

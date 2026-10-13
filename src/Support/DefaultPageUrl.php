@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Support;
+namespace Filagora\Cms\Support;
 
-use ForumKit\Cms\Contracts\PageUrlResolver;
-use ForumKit\Cms\Models\CmsPage;
+use Filagora\Cms\Contracts\PageUrlResolver;
+use Filagora\Cms\Models\CmsPage;
 
 /**
  * The page's custom route if it has one, otherwise `/pages/{slug}`.

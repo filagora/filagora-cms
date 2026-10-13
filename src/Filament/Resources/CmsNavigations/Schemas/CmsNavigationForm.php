@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsNavigations\Schemas;
+namespace Filagora\Cms\Filament\Resources\CmsNavigations\Schemas;
 
+use Filagora\Cms\Navigation\NavigationLinkTypes;
+use Filagora\Entitlements\Models\EntitlementDefinition;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -11,8 +13,6 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use ForumKit\Cms\Navigation\NavigationLinkTypes;
-use ForumKit\Entitlements\Models\EntitlementDefinition;
 
 class CmsNavigationForm
 {

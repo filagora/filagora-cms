@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Contracts\PreviewResolver;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsTag;
-use ForumKit\Cms\Preview\PreviewSession;
-use ForumKit\Cms\Services\CmsContent;
-use ForumKit\Cms\Services\MediaAssetUsage;
+use Filagora\Cms\Contracts\PreviewResolver;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsTag;
+use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Services\CmsContent;
+use Filagora\Cms\Services\MediaAssetUsage;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -65,7 +65,7 @@ it('does not serve a draft, a future page or a missing one by slug', function ()
     CmsPage::create(['slug' => 'draft', 'title' => 'D']);
     livePage(['slug' => 'soon', 'published_at' => now()->addHour()]);
     livePage(['slug' => 'unpublished', 'status' => 'draft']);
-    DB::table('forumkit_cms_pages')->where('slug', 'unpublished')->update(['published_at' => now()->subDay()]);
+    DB::table('filagora_cms_pages')->where('slug', 'unpublished')->update(['published_at' => now()->subDay()]);
 
     foreach (['draft', 'soon', 'unpublished', 'missing'] as $slug) {
         expect(content()->publishedPageBySlug($slug))->toBeNull($slug);
@@ -135,7 +135,7 @@ it('serves a cached menu without touching the database, until the menu is saved'
     $menu = CmsNavigation::create(['name' => 'Main', 'items' => [['label' => 'One', 'url' => '/1']]]);
     content()->navigation('Main');
 
-    DB::table('forumkit_cms_navigations')->where('id', $menu->id)->update(['items' => json_encode([['label' => 'Raw', 'url' => '/raw']])]);
+    DB::table('filagora_cms_navigations')->where('id', $menu->id)->update(['items' => json_encode([['label' => 'Raw', 'url' => '/raw']])]);
     expect(array_column(content()->navigationItems('Main'), 'label'))->toBe(['One']);
 
     $menu->update(['items' => [['label' => 'Two', 'url' => '/2']]]);
@@ -176,7 +176,7 @@ it('shows the previewed items of a menu being previewed, never cached', function
 });
 
 it('follows the configured cache lifetime', function () {
-    config(['forumkit-cms.navigation_cache_seconds' => 60]);
+    config(['filagora-cms.navigation_cache_seconds' => 60]);
     CmsNavigation::create(['name' => 'Short', 'items' => []]);
 
     content()->navigation('Short');
