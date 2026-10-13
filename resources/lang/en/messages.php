@@ -13,6 +13,12 @@ return [
         'plural_model_label' => 'pages',
     ],
 
+    'blocks' => [
+        'navigation_label' => 'Reusable blocks',
+        'model_label' => 'reusable block',
+        'plural_model_label' => 'reusable blocks',
+    ],
+
     'navigations' => [
         'navigation_label' => 'Menus',
         'model_label' => 'menu',

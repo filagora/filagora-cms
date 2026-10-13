@@ -28,7 +28,7 @@ class MediaAssetUsage
             return [];
         }
 
-        $typeKeys = array_keys(array_filter($this->types->all(), static fn ($type): bool => $type->mediaPaths !== []));
+        $typeKeys = array_keys(array_filter($this->types->all(), static fn ($type): bool => $type->allMediaPaths() !== []));
 
         if ($typeKeys === []) {
             return [];

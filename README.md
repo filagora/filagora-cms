@@ -101,8 +101,8 @@ These services do not check who may call them; the Filament screens do.
     preview link, preview, publish (with a version summary and a stale-draft warning), schedule,
     cancel schedule, discard draft and unpublish; a pending-changes panel from the diff; a
     staged-blocks table (add, edit, delete, with change badges); and a versions list (view the
-    snapshot, restore to draft, delete). A block's content is edited as JSON; a type nobody
-    registered shows as "Unknown type" and can still be edited.
+    snapshot, restore to draft, delete). Each block type has its own form (see below); a type
+    with no fields, or one nobody registered, falls back to a JSON editor and can still be edited.
   - *Menus*: the same workflow, with a nested link editor (three levels) whose link kinds come
     from `NavigationLinkTypes`.
   - *Tags*, *Media* (single and bulk upload into `cms-media`, details read from the file, usage
@@ -111,11 +111,18 @@ These services do not check who may call them; the Filament screens do.
   - The page URL the editor's Preview sends you to comes from the `PageUrlResolver` contract
     (default: the custom route or `/pages/{slug}`); the address of a shared link from the route
     named in `filagora-cms.preview.share_route`. Both are yours to provide.
-  - Block forms per type, and reusable blocks, are the next step.
+  - *Reusable blocks*: list (type filter, pending-changes badge), create, an editor that works on
+    the staged copy (slug changes apply at once), publish, discard, delete, and a versions list.
+  - *Block forms*: each of the 19 generic types declares fields with a small DSL
+    (`Field::text()`, `url()`, `textarea()`, `markdown()`, `select()`, `toggle()`, `number()`,
+    `strings()`, `items()`, `media()`), passed as the fifth argument of `BlockType`. One
+    definition drives the form, normalises what is saved, upgrades older stored shapes and
+    derives the media paths (so usage tracking follows). A profile package registers its own
+    types the same way.
 
 ## Still to come
 
-Reusable blocks as a screen, and a form for each generic block type.
+Nothing planned for this package beyond release.
 
 ## Install
 

@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace Filagora\Cms\Filament\Resources\CmsPages\RelationManagers;
 
 use Filagora\Cms\BlockTypes\BlockTypeRegistry;
+use Filagora\Cms\Filament\Blocks\BlockForm;
 use Filagora\Cms\Models\CmsBlock;
 use Filagora\Cms\Services\PageDraftDiff;
 use Filagora\Cms\Services\PageDrafts;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -40,52 +37,7 @@ class BlocksRelationManager extends RelationManager
 
     public function form(Schema $schema): Schema
     {
-        return $schema->components(self::blockFields());
-    }
-
-    /**
-     * @return list<Component>
-     */
-    public static function blockFields(): array
-    {
-        return [
-            Select::make('type')
-                ->label('Type')
-                ->options(function (?CmsBlock $record): array {
-                    $registry = app(BlockTypeRegistry::class);
-                    $options = $registry->options();
-
-                    if ($record !== null && ! isset($options[$record->type])) {
-                        $options[$record->type] = $registry->label($record->type);
-                    }
-
-                    return $options;
-                })
-                ->required()
-                ->searchable(),
-            TextInput::make('name')->label('Name')->maxLength(255),
-            TextInput::make('sort_order')->label('Display order')->numeric()->minValue(0)->default(0)->required()
-                ->helperText('Lower values appear first.'),
-            Textarea::make('data_json')
-                ->label('Content (JSON)')
-                ->rows(14)
-                ->rules(['nullable', 'json'])
-                ->helperText('The block\'s content as JSON. Leave empty for none.')
-                ->columnSpanFull(),
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    public static function fillFromRecord(array $data): array
-    {
-        $data['data_json'] = is_array($data['data'] ?? null) && $data['data'] !== []
-            ? (string) json_encode($data['data'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
-            : '';
-
-        return $data;
+        return $schema->components(BlockForm::components());
     }
 
     /**
@@ -94,10 +46,7 @@ class BlocksRelationManager extends RelationManager
      */
     public static function prepare(array $data): array
     {
-        $json = trim((string) ($data['data_json'] ?? ''));
-        unset($data['data_json']);
-
-        $data['data'] = $json === '' ? null : json_decode($json, true);
+        $data = BlockForm::prepare($data);
         $data['is_reusable'] = false;
         $data['is_published'] = false;
         $data['slug'] = null;
@@ -136,7 +85,7 @@ class BlocksRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make()
-                    ->mutateRecordDataUsing(fn (array $data): array => self::fillFromRecord($data))
+                    ->mutateRecordDataUsing(fn (array $data): array => BlockForm::fill($data))
                     ->mutateDataUsing(fn (array $data): array => self::prepare($data))
                     ->after(fn () => $this->draftChanged()),
                 DeleteAction::make()->after(fn () => $this->draftChanged()),

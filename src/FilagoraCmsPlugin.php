@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Filagora\Cms;
 
+use Filagora\Cms\Filament\Resources\CmsBlocks\CmsBlockResource;
 use Filagora\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
 use Filagora\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
 use Filagora\Cms\Filament\Resources\CmsPages\CmsPageResource;
@@ -28,6 +29,7 @@ class FilagoraCmsPlugin implements Plugin
     {
         $panel->resources([
             CmsPageResource::class,
+            CmsBlockResource::class,
             CmsNavigationResource::class,
             CmsTagResource::class,
             CmsMediaAssetResource::class,
