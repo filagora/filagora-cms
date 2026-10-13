@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Preview;
+namespace Filagora\Cms\Preview;
 
 use DateTimeInterface;
-use ForumKit\Cms\Contracts\PreviewResolver;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPreviewShare;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Services\PageDrafts;
-use ForumKit\Cms\Support\Abilities;
-use ForumKit\Cms\Support\Models;
+use Filagora\Cms\Contracts\PreviewResolver;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Services\PageDrafts;
+use Filagora\Cms\Support\Abilities;
+use Filagora\Cms\Support\Models;
 use Illuminate\Contracts\Session\Session as SessionContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
@@ -132,7 +132,7 @@ class PreviewSession implements PreviewResolver
             $items[] = [
                 'type' => 'menu',
                 'key' => (string) $navigation->name,
-                'label' => __('forumkit-cms::messages.preview.menu_label', ['name' => $navigation->name]),
+                'label' => __('filagora-cms::messages.preview.menu_label', ['name' => $navigation->name]),
                 'active' => is_string($variant) ? $variant : $this->navigationDrafts->activeVariantName($navigation),
                 'variants' => $resolved['share'] === null ? $this->navigationDrafts->variantNames($navigation) : [],
             ];

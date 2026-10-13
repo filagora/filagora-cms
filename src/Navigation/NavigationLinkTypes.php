@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Navigation;
+namespace Filagora\Cms\Navigation;
 
 use Closure;
 use Illuminate\Support\Str;

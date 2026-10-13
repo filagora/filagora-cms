@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsMediaAssets\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsMediaAssets\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
+use Filagora\Cms\Media\MediaAssets;
 use Filament\Resources\Pages\CreateRecord;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
-use ForumKit\Cms\Media\MediaAssets;
 
 class CreateCmsMediaAsset extends CreateRecord
 {

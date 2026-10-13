@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Console;
+namespace Filagora\Cms\Console;
 
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Services\PageDrafts;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Services\PageDrafts;
 use Illuminate\Console\Command;
 
 /**
@@ -13,7 +13,7 @@ use Illuminate\Console\Command;
  */
 class PublishDueCommand extends Command
 {
-    protected $signature = 'forumkit:cms:publish-due';
+    protected $signature = 'filagora:cms:publish-due';
 
     protected $description = 'Publish CMS page and menu drafts whose scheduled publish time has arrived';
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Navigation;
+namespace Filagora\Cms\Navigation;
 
-use ForumKit\Entitlements\Services\AuthorizationService;
+use Filagora\Entitlements\Services\AuthorizationService;
 use Illuminate\Support\Facades\Log;
 
 /**

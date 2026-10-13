@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Services;
+namespace Filagora\Cms\Services;
 
-use ForumKit\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsNavigation;
 
 /**
  * Describes what publishing a menu draft would change: its staged items compared with the live

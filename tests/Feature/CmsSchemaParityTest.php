@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use ForumKit\Core\Schema\Adopter;
-use ForumKit\Core\Schema\AdoptionStatus;
-use ForumKit\Core\Schema\SchemaExtension;
-use ForumKit\Core\Schema\SchemaRegistry;
-use ForumKit\Core\Schema\TableShape;
+use Filagora\Core\Schema\Adopter;
+use Filagora\Core\Schema\AdoptionStatus;
+use Filagora\Core\Schema\SchemaExtension;
+use Filagora\Core\Schema\SchemaRegistry;
+use Filagora\Core\Schema\TableShape;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +16,7 @@ const CMS_TABLES = [
     'cms_navigations', 'cms_navigation_versions', 'cms_navigation_drafts', 'cms_navigation_draft_variants',
     'cms_tags', 'cms_page_tag', 'cms_media_assets', 'cms_preview_shares',
 ];
-const CMS_MIGRATION = '2026_10_12_100000_create_forumkit_cms_tables';
+const CMS_MIGRATION = '2026_10_12_100000_create_filagora_cms_tables';
 
 function cmsMigration(): object
 {
@@ -29,9 +29,9 @@ function cmsSnapshot()
 }
 
 afterEach(function () {
-    config(['forumkit.table_prefix' => '']);
+    config(['filagora.table_prefix' => '']);
     cmsMigration()->down();
-    config(['forumkit.table_prefix' => 'forumkit_']);
+    config(['filagora.table_prefix' => 'filagora_']);
     cmsMigration()->down();
     cmsMigration()->up();
 });
@@ -66,7 +66,7 @@ it('keeps the long identifiers within the database limit under the default prefi
         $shape = TableShape::inspect($base);
 
         foreach ([...array_keys($shape->indexes), ...array_keys($shape->foreignKeys)] as $name) {
-            expect(strlen('forumkit_'.$name))->toBeLessThanOrEqual(64, $name);
+            expect(strlen('filagora_'.$name))->toBeLessThanOrEqual(64, $name);
         }
     }
 });
@@ -77,7 +77,7 @@ it('keeps the long identifiers within the database limit under the default prefi
  */
 function existingCmsTables(bool $withExtra): void
 {
-    config(['forumkit.table_prefix' => '']);
+    config(['filagora.table_prefix' => '']);
     cmsMigration()->up();
     DB::table('migrations')->where('migration', CMS_MIGRATION)->delete();
 
@@ -87,9 +87,9 @@ function existingCmsTables(bool $withExtra): void
 }
 
 it('adopts the tables of an existing site and records the migration', function () {
-    config(['forumkit.table_prefix' => '']);
+    config(['filagora.table_prefix' => '']);
     cmsMigration()->down();
-    config(['forumkit.table_prefix' => 'forumkit_']);
+    config(['filagora.table_prefix' => 'filagora_']);
     cmsMigration()->down();
     existingCmsTables(false);
 
@@ -98,15 +98,15 @@ it('adopts the tables of an existing site and records the migration', function (
     expect($plan->status)->toBe(AdoptionStatus::Adoptable, implode('; ', $plan->differences))
         ->and($plan->pendingMigrations)->toBe([CMS_MIGRATION]);
 
-    $this->artisan('forumkit:adopt', ['--package' => 'cms'])->assertExitCode(0);
+    $this->artisan('filagora:adopt', ['--package' => 'cms'])->assertExitCode(0);
 
     expect(DB::table('migrations')->where('migration', CMS_MIGRATION)->exists())->toBeTrue();
 });
 
 it('names an undeclared extra column, and accepts it once a profile declares it exactly', function () {
-    config(['forumkit.table_prefix' => '']);
+    config(['filagora.table_prefix' => '']);
     cmsMigration()->down();
-    config(['forumkit.table_prefix' => 'forumkit_']);
+    config(['filagora.table_prefix' => 'filagora_']);
     cmsMigration()->down();
     existingCmsTables(true);
 
@@ -129,9 +129,9 @@ it('names an undeclared extra column, and accepts it once a profile declares it 
 });
 
 it('refuses a site that lost an index or a foreign key', function () {
-    config(['forumkit.table_prefix' => '']);
+    config(['filagora.table_prefix' => '']);
     cmsMigration()->down();
-    config(['forumkit.table_prefix' => 'forumkit_']);
+    config(['filagora.table_prefix' => 'filagora_']);
     cmsMigration()->down();
     existingCmsTables(false);
     Schema::table('cms_blocks', fn (Blueprint $table) => $table->dropIndex('cms_blocks_is_draft_index'));

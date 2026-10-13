@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsTags\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsTags\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsTags\CmsTagResource;
 use Filament\Resources\Pages\CreateRecord;
-use ForumKit\Cms\Filament\Resources\CmsTags\CmsTagResource;
 
 class CreateCmsTag extends CreateRecord
 {

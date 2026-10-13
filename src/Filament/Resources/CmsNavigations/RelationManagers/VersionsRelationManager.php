@@ -2,8 +2,13 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsNavigations\RelationManagers;
+namespace Filagora\Cms\Filament\Resources\CmsNavigations\RelationManagers;
 
+use Filagora\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsNavigationVersion;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Core\Support\UserModel;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -12,11 +17,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsNavigationVersion;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Core\Support\UserModel;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\On;
 
@@ -50,7 +50,7 @@ class VersionsRelationManager extends RelationManager
                     ->color('gray')
                     ->modalHeading(fn (CmsNavigationVersion $record): string => 'Version '.$record->version_number.' snapshot')
                     ->modalSubmitAction(false)
-                    ->modalContent(fn (CmsNavigationVersion $record): View => view('forumkit-cms::filament.version-snapshot', ['version' => $record])),
+                    ->modalContent(fn (CmsNavigationVersion $record): View => view('filagora-cms::filament.version-snapshot', ['version' => $record])),
                 Action::make('restore_version')
                     ->label('Restore to draft')
                     ->icon('heroicon-o-arrow-path')

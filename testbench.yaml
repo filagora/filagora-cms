@@ -1,2 +1,2 @@
 providers:
-  - ForumKit\Cms\CmsServiceProvider
+  - Filagora\Cms\CmsServiceProvider

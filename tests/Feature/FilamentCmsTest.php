@@ -2,42 +2,42 @@
 
 declare(strict_types=1);
 
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\Pages\CreateCmsMediaAsset;
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\Pages\EditCmsMediaAsset;
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\Pages\ListCmsMediaAssets;
+use Filagora\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
+use Filagora\Cms\Filament\Resources\CmsNavigations\Pages\CreateCmsNavigation;
+use Filagora\Cms\Filament\Resources\CmsNavigations\Pages\EditCmsNavigation;
+use Filagora\Cms\Filament\Resources\CmsNavigations\Pages\ListCmsNavigations;
+use Filagora\Cms\Filament\Resources\CmsNavigations\RelationManagers\VersionsRelationManager as MenuVersions;
+use Filagora\Cms\Filament\Resources\CmsPages\CmsPageResource;
+use Filagora\Cms\Filament\Resources\CmsPages\Pages\CreateCmsPage;
+use Filagora\Cms\Filament\Resources\CmsPages\Pages\EditCmsPage;
+use Filagora\Cms\Filament\Resources\CmsPages\Pages\ListCmsPages;
+use Filagora\Cms\Filament\Resources\CmsPages\RelationManagers\BlocksRelationManager;
+use Filagora\Cms\Filament\Resources\CmsPages\RelationManagers\VersionsRelationManager;
+use Filagora\Cms\Filament\Resources\CmsPreviewShares\CmsPreviewShareResource;
+use Filagora\Cms\Filament\Resources\CmsPreviewShares\Pages\ListCmsPreviewShares;
+use Filagora\Cms\Filament\Resources\CmsTags\CmsTagResource;
+use Filagora\Cms\Filament\Resources\CmsTags\Pages\CreateCmsTag;
+use Filagora\Cms\Filament\Resources\CmsTags\Pages\EditCmsTag;
+use Filagora\Cms\Filament\Resources\CmsTags\Pages\ListCmsTags;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsNavigationDraft;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPageDraft;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Models\CmsTag;
+use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Preview\PreviewShares;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Services\PageDrafts;
+use Filagora\Cms\Tests\Support\TestUser;
+use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Filament\Facades\Filament;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\Pages\CreateCmsMediaAsset;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\Pages\EditCmsMediaAsset;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\Pages\ListCmsMediaAssets;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\Pages\CreateCmsNavigation;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\Pages\EditCmsNavigation;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\Pages\ListCmsNavigations;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\RelationManagers\VersionsRelationManager as MenuVersions;
-use ForumKit\Cms\Filament\Resources\CmsPages\CmsPageResource;
-use ForumKit\Cms\Filament\Resources\CmsPages\Pages\CreateCmsPage;
-use ForumKit\Cms\Filament\Resources\CmsPages\Pages\EditCmsPage;
-use ForumKit\Cms\Filament\Resources\CmsPages\Pages\ListCmsPages;
-use ForumKit\Cms\Filament\Resources\CmsPages\RelationManagers\BlocksRelationManager;
-use ForumKit\Cms\Filament\Resources\CmsPages\RelationManagers\VersionsRelationManager;
-use ForumKit\Cms\Filament\Resources\CmsPreviewShares\CmsPreviewShareResource;
-use ForumKit\Cms\Filament\Resources\CmsPreviewShares\Pages\ListCmsPreviewShares;
-use ForumKit\Cms\Filament\Resources\CmsTags\CmsTagResource;
-use ForumKit\Cms\Filament\Resources\CmsTags\Pages\CreateCmsTag;
-use ForumKit\Cms\Filament\Resources\CmsTags\Pages\EditCmsTag;
-use ForumKit\Cms\Filament\Resources\CmsTags\Pages\ListCmsTags;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsNavigationDraft;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPageDraft;
-use ForumKit\Cms\Models\CmsPreviewShare;
-use ForumKit\Cms\Models\CmsTag;
-use ForumKit\Cms\Preview\PreviewSession;
-use ForumKit\Cms\Preview\PreviewShares;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Services\PageDrafts;
-use ForumKit\Cms\Tests\Support\TestUser;
-use ForumKit\Entitlements\Models\UserEntitlementGrant;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -53,7 +53,7 @@ function cmsEditor(string ...$keys): TestUser
 {
     $user = TestUser::make('Editor');
 
-    foreach ($keys ?: ['forumkit.cms.manage'] as $key) {
+    foreach ($keys ?: ['filagora.cms.manage'] as $key) {
         UserEntitlementGrant::create(['user_id' => $user->id, 'entitlement_key' => $key, 'grant_type' => 'manual']);
     }
 
@@ -75,7 +75,7 @@ function livePageWithBlocks(string $slug = 'about'): CmsPage
 it('opens the CMS screens only to those holding the manage ability', function () {
     $resources = [CmsPageResource::class, CmsNavigationResource::class, CmsTagResource::class, CmsMediaAssetResource::class, CmsPreviewShareResource::class];
 
-    cmsEditor('forumkit.cms.preview');
+    cmsEditor('filagora.cms.preview');
     foreach ($resources as $resource) {
         expect($resource::canViewAny())->toBeFalse($resource);
     }

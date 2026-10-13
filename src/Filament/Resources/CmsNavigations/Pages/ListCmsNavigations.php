@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsNavigations\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsNavigations\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
 
 class ListCmsNavigations extends ListRecords
 {

@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Services;
+namespace Filagora\Cms\Services;
 
 use DateTimeInterface;
-use ForumKit\Cms\Enums\CmsPageStatus;
-use ForumKit\Cms\Events\CmsPagePublished;
-use ForumKit\Cms\Exceptions\DraftOperationFailed;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPageDraft;
-use ForumKit\Cms\Models\CmsPageDraftVariant;
-use ForumKit\Cms\Models\CmsPageVersion;
-use ForumKit\Cms\Services\Concerns\NamesDraftVariants;
-use ForumKit\Cms\Support\Models;
-use ForumKit\Core\Support\UserModel;
+use Filagora\Cms\Enums\CmsPageStatus;
+use Filagora\Cms\Events\CmsPagePublished;
+use Filagora\Cms\Exceptions\DraftOperationFailed;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPageDraft;
+use Filagora\Cms\Models\CmsPageDraftVariant;
+use Filagora\Cms\Models\CmsPageVersion;
+use Filagora\Cms\Services\Concerns\NamesDraftVariants;
+use Filagora\Cms\Support\Models;
+use Filagora\Core\Support\UserModel;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;

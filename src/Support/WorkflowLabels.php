@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Support;
+namespace Filagora\Cms\Support;
 
-use ForumKit\Cms\Enums\CmsPageStatus;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsPage;
+use Filagora\Cms\Enums\CmsPageStatus;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsPage;
 
 /**
  * What state a page or menu is in, in words and as a coloured badge, from its draft.

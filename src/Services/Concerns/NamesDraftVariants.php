@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Services\Concerns;
+namespace Filagora\Cms\Services\Concerns;
 
 use Illuminate\Validation\ValidationException;
 

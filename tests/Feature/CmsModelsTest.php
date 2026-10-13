@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Enums\CmsPageStatus;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsBlockVersion;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsNavigationDraft;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPageDraft;
-use ForumKit\Cms\Models\CmsPageDraftVariant;
-use ForumKit\Cms\Models\CmsPageVersion;
-use ForumKit\Cms\Models\CmsPreviewShare;
-use ForumKit\Cms\Models\CmsTag;
-use ForumKit\Cms\Support\Models;
-use ForumKit\Cms\Tests\Support\TestUser;
+use Filagora\Cms\Enums\CmsPageStatus;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsBlockVersion;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsNavigationDraft;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPageDraft;
+use Filagora\Cms\Models\CmsPageDraftVariant;
+use Filagora\Cms\Models\CmsPageVersion;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Models\CmsTag;
+use Filagora\Cms\Support\Models;
+use Filagora\Cms\Tests\Support\TestUser;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -29,21 +29,21 @@ function page(array $attributes = []): CmsPage
 // ------------------------------------------------------------------ helper and config
 
 it('resolves every model through the helper, and a host can swap one', function () {
-    foreach (array_keys(config('forumkit-cms.models')) as $key) {
+    foreach (array_keys(config('filagora-cms.models')) as $key) {
         expect(class_exists(Models::class($key)))->toBeTrue($key);
     }
 
     expect(fn () => Models::class('nothing'))->toThrow(InvalidArgumentException::class);
 
-    config(['forumkit.models.tag' => 'Host\\Tag']);
+    config(['filagora.models.tag' => 'Host\\Tag']);
     expect(Models::class('tag'))->toBe('Host\\Tag');
 });
 
 it('uses the prefixed table names', function () {
-    expect((new CmsPage)->getTable())->toBe('forumkit_cms_pages')
-        ->and((new CmsPreviewShare)->getTable())->toBe('forumkit_cms_preview_shares');
+    expect((new CmsPage)->getTable())->toBe('filagora_cms_pages')
+        ->and((new CmsPreviewShare)->getTable())->toBe('filagora_cms_preview_shares');
 
-    config(['forumkit.table_prefix' => '']);
+    config(['filagora.table_prefix' => '']);
     expect((new CmsPage)->getTable())->toBe('cms_pages');
 });
 
@@ -85,7 +85,7 @@ it('counts a page as published only when its time has arrived', function () {
 });
 
 it('loads a status written by the old site', function () {
-    DB::table('forumkit_cms_pages')->insert(['slug' => 'old', 'title' => 'Old', 'status' => 'published', 'published_at' => now()->subDay()]);
+    DB::table('filagora_cms_pages')->insert(['slug' => 'old', 'title' => 'Old', 'status' => 'published', 'published_at' => now()->subDay()]);
 
     expect(CmsPage::where('slug', 'old')->sole()->status)->toBe(CmsPageStatus::PUBLISHED);
 });

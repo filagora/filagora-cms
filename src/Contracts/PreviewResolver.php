@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Contracts;
+namespace Filagora\Cms\Contracts;
 
-use ForumKit\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPage;
 
 /**
  * Lets the readers serve unpublished content to someone who is previewing it. The package's

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsNavigations\Tables;
+namespace Filagora\Cms\Filament\Resources\CmsNavigations\Tables;
 
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Support\WorkflowLabels;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Support\WorkflowLabels;
 use Illuminate\Database\Eloquent\Builder;
 
 class CmsNavigationsTable

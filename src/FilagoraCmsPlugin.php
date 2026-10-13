@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms;
+namespace Filagora\Cms;
 
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
+use Filagora\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
+use Filagora\Cms\Filament\Resources\CmsPages\CmsPageResource;
+use Filagora\Cms\Filament\Resources\CmsPreviewShares\CmsPreviewShareResource;
+use Filagora\Cms\Filament\Resources\CmsTags\CmsTagResource;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
-use ForumKit\Cms\Filament\Resources\CmsPages\CmsPageResource;
-use ForumKit\Cms\Filament\Resources\CmsPreviewShares\CmsPreviewShareResource;
-use ForumKit\Cms\Filament\Resources\CmsTags\CmsTagResource;
 
-class ForumKitCmsPlugin implements Plugin
+class FilagoraCmsPlugin implements Plugin
 {
     public static function make(): static
     {
@@ -21,7 +21,7 @@ class ForumKitCmsPlugin implements Plugin
 
     public function getId(): string
     {
-        return 'forumkit-cms';
+        return 'filagora-cms';
     }
 
     public function register(Panel $panel): void

@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsPreviewShares;
+namespace Filagora\Cms\Filament\Resources\CmsPreviewShares;
 
 use BackedEnum;
+use Filagora\Cms\Filament\Concerns\GatedByManage;
+use Filagora\Cms\Filament\Resources\CmsPreviewShares\Pages\ListCmsPreviewShares;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Preview\PreviewShares;
+use Filagora\Cms\Support\Models;
+use Filagora\Core\Navigation\NavigationGroupRegistry;
+use Filagora\Core\Support\UserModel;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use ForumKit\Cms\Filament\Concerns\GatedByManage;
-use ForumKit\Cms\Filament\Resources\CmsPreviewShares\Pages\ListCmsPreviewShares;
-use ForumKit\Cms\Models\CmsPreviewShare;
-use ForumKit\Cms\Preview\PreviewShares;
-use ForumKit\Cms\Support\Models;
-use ForumKit\Core\Navigation\NavigationGroupRegistry;
-use ForumKit\Core\Support\UserModel;
 use UnitEnum;
 
 /**
@@ -43,17 +43,17 @@ class CmsPreviewShareResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('forumkit-cms::messages.shares.navigation_label');
+        return __('filagora-cms::messages.shares.navigation_label');
     }
 
     public static function getModelLabel(): string
     {
-        return __('forumkit-cms::messages.shares.model_label');
+        return __('filagora-cms::messages.shares.model_label');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('forumkit-cms::messages.shares.plural_model_label');
+        return __('filagora-cms::messages.shares.plural_model_label');
     }
 
     public static function canCreate(): bool
@@ -102,7 +102,7 @@ class CmsPreviewShareResource extends Resource
                     ->visible(fn (CmsPreviewShare $record): bool => $record->isUsable())
                     ->action(fn (CmsPreviewShare $record) => Notification::make()
                         ->title('Preview link')
-                        ->body($record->url() ?? 'Define the route named in forumkit-cms.preview.share_route to open links. Token: '.$record->getRawOriginal('token'))
+                        ->body($record->url() ?? 'Define the route named in filagora-cms.preview.share_route to open links. Token: '.$record->getRawOriginal('token'))
                         ->persistent()
                         ->send()),
                 Action::make('revoke')

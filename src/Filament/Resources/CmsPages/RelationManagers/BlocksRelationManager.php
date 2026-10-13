@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsPages\RelationManagers;
+namespace Filagora\Cms\Filament\Resources\CmsPages\RelationManagers;
 
+use Filagora\Cms\BlockTypes\BlockTypeRegistry;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Services\PageDraftDiff;
+use Filagora\Cms\Services\PageDrafts;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -15,10 +19,6 @@ use Filament\Schemas\Components\Component;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use ForumKit\Cms\BlockTypes\BlockTypeRegistry;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Services\PageDraftDiff;
-use ForumKit\Cms\Services\PageDrafts;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\On;
 

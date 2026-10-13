@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\BlockTypes;
+namespace Filagora\Cms\BlockTypes;
 
 /**
  * One kind of content block. `mediaPaths` says where in the block's `data` a media asset id is

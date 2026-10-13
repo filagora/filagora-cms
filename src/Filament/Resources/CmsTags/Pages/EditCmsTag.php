@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsTags\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsTags\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsTags\CmsTagResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
-use ForumKit\Cms\Filament\Resources\CmsTags\CmsTagResource;
 
 class EditCmsTag extends EditRecord
 {

@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPreviewShare;
-use ForumKit\Cms\Preview\PreviewSession;
-use ForumKit\Cms\Preview\PreviewShares;
-use ForumKit\Cms\Services\CmsContent;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Services\PageDrafts;
-use ForumKit\Cms\Support\NoPreview;
-use ForumKit\Cms\Tests\Support\TestUser;
-use ForumKit\Entitlements\Models\UserEntitlementGrant;
-use ForumKit\Entitlements\Registry\EntitlementRegistry;
+use Filagora\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Preview\PreviewShares;
+use Filagora\Cms\Services\CmsContent;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Services\PageDrafts;
+use Filagora\Cms\Support\NoPreview;
+use Filagora\Cms\Tests\Support\TestUser;
+use Filagora\Entitlements\Models\UserEntitlementGrant;
+use Filagora\Entitlements\Registry\EntitlementRegistry;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +47,7 @@ function editor(string ...$keys): TestUser
 {
     $user = TestUser::make('Editor');
 
-    foreach ($keys ?: ['forumkit.cms.preview'] as $key) {
+    foreach ($keys ?: ['filagora.cms.preview'] as $key) {
         UserEntitlementGrant::create(['user_id' => $user->id, 'entitlement_key' => $key, 'grant_type' => 'manual']);
     }
 
@@ -157,7 +157,7 @@ it('does not preview for someone who may not, even with a preview stored in thei
     expect(previewSession()->isActive())->toBeFalse()
         ->and(previewSession()->pageForSlug('about'))->toBeNull();
 
-    editor('forumkit.cms.manage');
+    editor('filagora.cms.manage');
     expect(previewSession()->isActive())->toBeTrue();
 });
 
@@ -340,7 +340,7 @@ it('looks the link up once per request however often it is asked', function () {
     previewSession()->isActive();
     previewSession()->isShared();
 
-    $lookups = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'forumkit_cms_preview_shares'))->count();
+    $lookups = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'filagora_cms_preview_shares'))->count();
     expect($lookups)->toBe(1);
 });
 
@@ -403,15 +403,15 @@ it('puts that middleware in the web group, unless switched off', function () {
     $groups = app(Router::class)->getMiddlewareGroups();
 
     expect($groups['web'] ?? [])->toContain(MarkPreviewResponsesUncacheable::class)
-        ->and(config('forumkit-cms.preview.uncacheable_middleware'))->toBeTrue();
+        ->and(config('filagora-cms.preview.uncacheable_middleware'))->toBeTrue();
 });
 
 it('declares the two abilities as entitlements and gates them', function () {
     $keys = array_map(fn ($definition) => $definition->key, array_values(app(EntitlementRegistry::class)->definitions()));
 
-    expect($keys)->toContain('forumkit.cms.manage', 'forumkit.cms.preview');
+    expect($keys)->toContain('filagora.cms.manage', 'filagora.cms.preview');
 
-    $user = editor('forumkit.cms.preview');
-    expect(Gate::forUser($user)->allows('forumkit.cms.preview'))->toBeTrue()
-        ->and(Gate::forUser($user)->allows('forumkit.cms.manage'))->toBeFalse();
+    $user = editor('filagora.cms.preview');
+    expect(Gate::forUser($user)->allows('filagora.cms.preview'))->toBeTrue()
+        ->and(Gate::forUser($user)->allows('filagora.cms.manage'))->toBeFalse();
 });

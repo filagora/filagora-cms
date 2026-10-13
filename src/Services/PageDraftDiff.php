@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Services;
+namespace Filagora\Cms\Services;
 
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Support\Models;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Support\Models;
 use Illuminate\Support\Str;
 
 /**

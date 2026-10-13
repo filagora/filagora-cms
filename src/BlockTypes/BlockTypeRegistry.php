@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\BlockTypes;
+namespace Filagora\Cms\BlockTypes;
 
 use BackedEnum;
 use Illuminate\Support\Str;

@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsNavigations;
+namespace Filagora\Cms\Filament\Resources\CmsNavigations;
 
 use BackedEnum;
+use Filagora\Cms\Filament\Concerns\GatedByManage;
+use Filagora\Cms\Filament\Resources\CmsNavigations\Pages\CreateCmsNavigation;
+use Filagora\Cms\Filament\Resources\CmsNavigations\Pages\EditCmsNavigation;
+use Filagora\Cms\Filament\Resources\CmsNavigations\Pages\ListCmsNavigations;
+use Filagora\Cms\Filament\Resources\CmsNavigations\RelationManagers\VersionsRelationManager;
+use Filagora\Cms\Filament\Resources\CmsNavigations\Schemas\CmsNavigationForm;
+use Filagora\Cms\Filament\Resources\CmsNavigations\Tables\CmsNavigationsTable;
+use Filagora\Cms\Support\Models;
+use Filagora\Core\Navigation\NavigationGroupRegistry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use ForumKit\Cms\Filament\Concerns\GatedByManage;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\Pages\CreateCmsNavigation;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\Pages\EditCmsNavigation;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\Pages\ListCmsNavigations;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\RelationManagers\VersionsRelationManager;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\Schemas\CmsNavigationForm;
-use ForumKit\Cms\Filament\Resources\CmsNavigations\Tables\CmsNavigationsTable;
-use ForumKit\Cms\Support\Models;
-use ForumKit\Core\Navigation\NavigationGroupRegistry;
 use UnitEnum;
 
 class CmsNavigationResource extends Resource
@@ -40,17 +40,17 @@ class CmsNavigationResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('forumkit-cms::messages.navigations.navigation_label');
+        return __('filagora-cms::messages.navigations.navigation_label');
     }
 
     public static function getModelLabel(): string
     {
-        return __('forumkit-cms::messages.navigations.model_label');
+        return __('filagora-cms::messages.navigations.model_label');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('forumkit-cms::messages.navigations.plural_model_label');
+        return __('filagora-cms::messages.navigations.plural_model_label');
     }
 
     public static function form(Schema $schema): Schema

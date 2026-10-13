@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Enums;
+namespace Filagora\Cms\Enums;
 
 /**
  * Every value ever stored is kept, so existing data loads.

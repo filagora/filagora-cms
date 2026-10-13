@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsMediaAssets\Pages;
+namespace Filagora\Cms\Filament\Resources\CmsMediaAssets\Pages;
 
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
+use Filagora\Cms\Filament\Resources\CmsMediaAssets\Schemas\CmsMediaAssetForm;
+use Filagora\Cms\Media\MediaAssets;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
@@ -13,9 +16,6 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Utilities\Get;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
-use ForumKit\Cms\Filament\Resources\CmsMediaAssets\Schemas\CmsMediaAssetForm;
-use ForumKit\Cms\Media\MediaAssets;
 
 class ListCmsMediaAssets extends ListRecords
 {

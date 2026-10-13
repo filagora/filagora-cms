@@ -2,8 +2,11 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsPages\Tables;
+namespace Filagora\Cms\Filament\Resources\CmsPages\Tables;
 
+use Filagora\Cms\Enums\CmsPageStatus;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Support\WorkflowLabels;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -11,9 +14,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use ForumKit\Cms\Enums\CmsPageStatus;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Support\WorkflowLabels;
 use Illuminate\Database\Eloquent\Builder;
 
 class CmsPagesTable

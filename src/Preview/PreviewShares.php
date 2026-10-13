@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Preview;
+namespace Filagora\Cms\Preview;
 
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPreviewShare;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Services\PageDrafts;
-use ForumKit\Cms\Support\Models;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Services\PageDrafts;
+use Filagora\Cms\Support\Models;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;

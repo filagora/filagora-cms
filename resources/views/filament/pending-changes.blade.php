@@ -1,5 +1,5 @@
 @php
-    $diff = $record ? app(\ForumKit\Cms\Services\PageDraftDiff::class)->forPage($record) : null;
+    $diff = $record ? app(\Filagora\Cms\Services\PageDraftDiff::class)->forPage($record) : null;
     $badgeColors = ['Added' => 'text-green-700 bg-green-50', 'Edited' => 'text-amber-700 bg-amber-50', 'Removed' => 'text-red-700 bg-red-50'];
 @endphp
 

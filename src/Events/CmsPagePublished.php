@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Events;
+namespace Filagora\Cms\Events;
 
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPageVersion;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPageVersion;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Events\Dispatchable;
 

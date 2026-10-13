@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Services;
+namespace Filagora\Cms\Services;
 
-use ForumKit\Cms\Events\CmsBlockPublished;
-use ForumKit\Cms\Exceptions\DraftOperationFailed;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsBlockVersion;
-use ForumKit\Cms\Support\Models;
+use Filagora\Cms\Events\CmsBlockPublished;
+use Filagora\Cms\Exceptions\DraftOperationFailed;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsBlockVersion;
+use Filagora\Cms\Support\Models;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;

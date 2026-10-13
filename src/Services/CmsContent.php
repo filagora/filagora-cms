@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Services;
+namespace Filagora\Cms\Services;
 
-use ForumKit\Cms\Contracts\PreviewResolver;
-use ForumKit\Cms\Models\CmsBlock;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Navigation\NavigationItems;
-use ForumKit\Cms\Support\Models;
+use Filagora\Cms\Contracts\PreviewResolver;
+use Filagora\Cms\Models\CmsBlock;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Navigation\NavigationItems;
+use Filagora\Cms\Support\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Cache;
 /**
  * What a visitor may read: published pages, menus, reusable blocks and media. A request that is
  * previewing unpublished changes is served those instead (through the `PreviewResolver`).
- * Menus are cached under `cms:navigation:{name}` for `forumkit-cms.navigation_cache_seconds`
+ * Menus are cached under `cms:navigation:{name}` for `filagora-cms.navigation_cache_seconds`
  * and cleared when the menu is saved.
  */
 class CmsContent
@@ -85,7 +85,7 @@ class CmsContent
         if (! array_key_exists($name, $this->navigations)) {
             $cached = Cache::remember(
                 CmsNavigation::CACHE_PREFIX.$name,
-                now()->addSeconds((int) config('forumkit-cms.navigation_cache_seconds', 300)),
+                now()->addSeconds((int) config('filagora-cms.navigation_cache_seconds', 300)),
                 fn (): ?array => $this->serialize($this->navigationQuery()->where('name', $name)->first()),
             );
 

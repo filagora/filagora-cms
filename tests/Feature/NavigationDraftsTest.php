@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Events\CmsNavigationPublished;
-use ForumKit\Cms\Exceptions\DraftOperationFailed;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsNavigationDraft;
-use ForumKit\Cms\Models\CmsNavigationDraftVariant;
-use ForumKit\Cms\Models\CmsNavigationVersion;
-use ForumKit\Cms\Services\CmsContent;
-use ForumKit\Cms\Services\NavigationDraftDiff;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Tests\Support\TestUser;
+use Filagora\Cms\Events\CmsNavigationPublished;
+use Filagora\Cms\Exceptions\DraftOperationFailed;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsNavigationDraft;
+use Filagora\Cms\Models\CmsNavigationDraftVariant;
+use Filagora\Cms\Models\CmsNavigationVersion;
+use Filagora\Cms\Services\CmsContent;
+use Filagora\Cms\Services\NavigationDraftDiff;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Tests\Support\TestUser;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
@@ -316,7 +316,7 @@ it('lets the command publish due pages and menus and say how many of each', func
     menus()->saveDraft($menu, [['label' => 'x', 'url' => '/x']]);
     menus()->schedule($menu, now()->subMinute());
 
-    $this->artisan('forumkit:cms:publish-due')
+    $this->artisan('filagora:cms:publish-due')
         ->expectsOutputToContain('Published 0 scheduled CMS page(s).')
         ->expectsOutputToContain('Published 1 scheduled navigation menu(s).')
         ->assertExitCode(0);

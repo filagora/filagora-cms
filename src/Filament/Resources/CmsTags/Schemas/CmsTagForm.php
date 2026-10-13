@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Filament\Resources\CmsTags\Schemas;
+namespace Filagora\Cms\Filament\Resources\CmsTags\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;

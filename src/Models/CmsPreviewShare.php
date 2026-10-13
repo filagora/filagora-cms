@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace ForumKit\Cms\Models;
+namespace Filagora\Cms\Models;
 
-use ForumKit\Core\Support\Tables;
-use ForumKit\Core\Support\UserModel;
+use Filagora\Core\Support\Tables;
+use Filagora\Core\Support\UserModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -67,11 +67,11 @@ class CmsPreviewShare extends Model
 
     /**
      * The address that opens this link, if the host has defined the route named in
-     * `forumkit-cms.preview.share_route` (it takes the token).
+     * `filagora-cms.preview.share_route` (it takes the token).
      */
     public function url(): ?string
     {
-        $route = (string) config('forumkit-cms.preview.share_route', 'cms.preview.share.open');
+        $route = (string) config('filagora-cms.preview.share_route', 'cms.preview.share.open');
 
         return Route::has($route) ? route($route, ['token' => $this->getRawOriginal('token')]) : null;
     }

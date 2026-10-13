@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use ForumKit\Cms\Contracts\PageUrlResolver;
-use ForumKit\Cms\Media\MediaAssets;
-use ForumKit\Cms\Models\CmsMediaAsset;
-use ForumKit\Cms\Models\CmsNavigation;
-use ForumKit\Cms\Models\CmsPage;
-use ForumKit\Cms\Models\CmsPreviewShare;
-use ForumKit\Cms\Navigation\NavigationLinkTypes;
-use ForumKit\Cms\Services\NavigationDrafts;
-use ForumKit\Cms\Services\PageDrafts;
-use ForumKit\Cms\Support\DefaultPageUrl;
-use ForumKit\Cms\Support\WorkflowLabels;
-use ForumKit\Cms\Tests\Support\TestUser;
+use Filagora\Cms\Contracts\PageUrlResolver;
+use Filagora\Cms\Media\MediaAssets;
+use Filagora\Cms\Models\CmsMediaAsset;
+use Filagora\Cms\Models\CmsNavigation;
+use Filagora\Cms\Models\CmsPage;
+use Filagora\Cms\Models\CmsPreviewShare;
+use Filagora\Cms\Navigation\NavigationLinkTypes;
+use Filagora\Cms\Services\NavigationDrafts;
+use Filagora\Cms\Services\PageDrafts;
+use Filagora\Cms\Support\DefaultPageUrl;
+use Filagora\Cms\Support\WorkflowLabels;
+use Filagora\Cms\Tests\Support\TestUser;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
@@ -90,7 +90,7 @@ it('gives a share its address only when the host has defined the route', functio
 
     expect($share->url())->toBe(url('/preview/tok-123'));
 
-    config(['forumkit-cms.preview.share_route' => 'somewhere.else']);
+    config(['filagora-cms.preview.share_route' => 'somewhere.else']);
     expect($share->url())->toBeNull();
 });
 
