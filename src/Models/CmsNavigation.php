@@ -69,28 +69,31 @@ class CmsNavigation extends Model
     }
 
     /**
-     * @return HasOne<Model, $this>
+     * @return HasOne<CmsNavigationDraft, $this>
      */
     public function draft(): HasOne
     {
+        /** @var HasOne<CmsNavigationDraft, $this> */
         return $this->hasOne(Models::class('navigation_draft'), 'cms_navigation_id');
     }
 
     /**
      * Named drafts parked while another variant is the working draft.
      *
-     * @return HasMany<Model, $this>
+     * @return HasMany<CmsNavigationDraftVariant, $this>
      */
     public function draftVariants(): HasMany
     {
+        /** @var HasMany<CmsNavigationDraftVariant, $this> */
         return $this->hasMany(Models::class('navigation_draft_variant'), 'cms_navigation_id')->orderBy('name');
     }
 
     /**
-     * @return HasMany<Model, $this>
+     * @return HasMany<CmsNavigationVersion, $this>
      */
     public function versions(): HasMany
     {
+        /** @var HasMany<CmsNavigationVersion, $this> */
         return $this->hasMany(Models::class('navigation_version'), 'cms_navigation_id');
     }
 }

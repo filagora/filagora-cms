@@ -63,6 +63,13 @@ Requires [`zcwilt/forumkit-core`](https://github.com/zcwilt/forumkit-core) and
   - *Preview*: `previewPage` and `previewPageVariant` build an unsaved in-memory copy as it would
     look once published.
   - `PageDraftDiff` describes what publishing would change, field by field, tags and blocks.
+- **The same for menus** (`NavigationDrafts`): one working draft of a menu's items, named variants,
+  discard, stale check, publish (saving the menu clears its cache) with a version of the menu's
+  name and items and a `CmsNavigationPublished` event, restore a version to the draft, schedule,
+  and `itemsForVariant` to read the items of any variant. `NavigationDraftDiff` lists items added,
+  changed and removed, matched by label path ("Support › Donate"). A menu's name is an identifier
+  the site relies on, so it is never staged. `forumkit:cms:publish-due` publishes due pages and
+  menus.
 - **The same for reusable blocks** (`BlockDrafts`): a hidden staged copy, pending-change check,
   publish with a version and a `CmsBlockPublished` event, restore from a version.
 
@@ -70,8 +77,7 @@ These services do not check who may call them; the Filament screens do.
 
 ## Still to come
 
-The same workflow for menus, the preview session and shared preview links, and the Filament
-screens (including each block type's form).
+The preview session and shared preview links, and the Filament screens (including each block type's form).
 
 ## Install
 
