@@ -110,7 +110,7 @@ final class BlockTypeRegistry
             return false;
         }
 
-        foreach ($blockType->mediaPaths as $path) {
+        foreach ($blockType->allMediaPaths() as $path) {
             foreach ($this->valuesAt($data, explode('.', $path)) as $value) {
                 if ((int) $value === $assetId) {
                     return true;

@@ -5,6 +5,9 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+- Typed block forms: a field DSL (`Filagora\Cms\BlockTypes\Fields\Field`) on `BlockType`, forms for all 19 generic types, JSON editor kept as the fallback for field-less or unregistered types.
+- Reusable blocks screen (`CmsBlockResource`) working on the staged copy, with publish, discard, delete and versions.
+
 - Filament plugin `ForumKitCmsPlugin` with screens for pages (draft editor, variants, share link, preview, publish, schedule, discard, unpublish, pending-changes panel, staged blocks, versions), menus (same workflow, nested link editor), tags, media (upload, bulk upload, usage, guarded delete) and preview links; navigation group "Content".
 - `PageUrlResolver` contract (default: custom route or `/pages/{slug}`), `WorkflowLabels`, `MediaAssets` service, link-kind labels and references on `NavigationLinkTypes`, `CmsPreviewShare::url()` (route named in `forumkit-cms.preview.share_route`).
 - `PreviewSession` falls back to the application's session store when the request has none (a Livewire call).

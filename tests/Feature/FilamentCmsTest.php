@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Filagora\Cms\BlockTypes\BlockType;
+use Filagora\Cms\BlockTypes\BlockTypeRegistry;
 use Filagora\Cms\Filament\Resources\CmsMediaAssets\CmsMediaAssetResource;
 use Filagora\Cms\Filament\Resources\CmsMediaAssets\Pages\CreateCmsMediaAsset;
 use Filagora\Cms\Filament\Resources\CmsMediaAssets\Pages\EditCmsMediaAsset;
@@ -264,7 +266,7 @@ it('creates a preview link for a variant from the editor', function () {
 
 // ------------------------------------------------------------------ blocks and versions
 
-it('adds, edits and removes staged blocks, keeping their content as JSON, and marks the draft dirty', function () {
+it('adds, edits and removes staged blocks through the form of their type, and marks the draft dirty', function () {
     cmsEditor();
     $page = livePageWithBlocks();
     app(PageDrafts::class)->ensureDraft($page);
@@ -272,31 +274,56 @@ it('adds, edits and removes staged blocks, keeping their content as JSON, and ma
 
     $manager()->assertCanSeeTableRecords($page->draftBlocks()->get());
 
-    $manager()->callTableAction('create', data: ['type' => 'image', 'name' => 'Pic', 'sort_order' => 2, 'data_json' => '{"asset_id": 5}'])->assertHasNoTableActionErrors();
-    $added = $page->draftBlocks()->where('name', 'Pic')->sole();
-    expect($added->data)->toBe(['asset_id' => 5])
+    $manager()->callTableAction('create', data: ['type' => 'cta_band', 'name' => 'Join', 'sort_order' => 2, 'data' => ['title' => ' Join us ', 'primary_label' => 'Go', 'primary_url' => '/join', 'junk' => 'x']])->assertHasNoTableActionErrors();
+    $added = $page->draftBlocks()->where('name', 'Join')->sole();
+    expect($added->data)->toBe(['title' => 'Join us', 'body' => '', 'theme' => 'dark', 'primary_label' => 'Go', 'primary_url' => '/join', 'secondary_label' => '', 'secondary_url' => ''])
         ->and($added->is_draft)->toBeTrue()
         ->and($added->is_reusable)->toBeFalse()
         ->and(CmsPageDraft::sole()->is_dirty)->toBeTrue()
         ->and($page->blocks()->count())->toBe(1);
 
-    $manager()->callTableAction('edit', $added, data: ['type' => 'image', 'name' => 'Pic 2', 'sort_order' => 3, 'data_json' => ''])->assertHasNoTableActionErrors();
-    expect($added->refresh()->name)->toBe('Pic 2')->and($added->data)->toBeNull();
+    $manager()->callTableAction('edit', $added, data: ['type' => 'cta_band', 'name' => 'Join 2', 'sort_order' => 3, 'data' => ['title' => 'Changed', 'theme' => 'warm']])->assertHasNoTableActionErrors();
+    expect($added->refresh()->name)->toBe('Join 2')->and($added->data['title'])->toBe('Changed')->and($added->data['theme'])->toBe('warm');
 
     $manager()->callTableAction('delete', $added);
     expect($page->draftBlocks()->count())->toBe(1);
 });
 
-it('rejects block content that is not JSON', function () {
+it('loads a stored block into the form of its type, with defaults for what is missing', function () {
     cmsEditor();
+    $page = livePageWithBlocks();
+    app(PageDrafts::class)->ensureDraft($page);
+    $hero = $page->draftBlocks()->where('name', 'Top')->sole();
+
+    Livewire::test(BlocksRelationManager::class, ['ownerRecord' => $page, 'pageClass' => EditCmsPage::class])
+        ->mountTableAction('edit', $hero)
+        ->assertTableActionDataSet(['type' => 'hero', 'name' => 'Top', 'data.title' => 'Hello', 'data.body' => '', 'data.cta_url' => '']);
+});
+
+it('rejects content that is not JSON for a type that has no form', function () {
+    cmsEditor();
+    app(BlockTypeRegistry::class)->register(new BlockType('profile_only', 'Profile only'));
     $page = livePageWithBlocks();
     app(PageDrafts::class)->ensureDraft($page);
 
     Livewire::test(BlocksRelationManager::class, ['ownerRecord' => $page, 'pageClass' => EditCmsPage::class])
-        ->callTableAction('create', data: ['type' => 'image', 'sort_order' => 0, 'data_json' => '{not json'])
+        ->callTableAction('create', data: ['type' => 'profile_only', 'sort_order' => 0, 'data_json' => '{not json'])
         ->assertHasTableActionErrors(['data_json']);
 
     expect($page->draftBlocks()->count())->toBe(1);
+});
+
+it('stores JSON content as it is for a type that has no form', function () {
+    cmsEditor();
+    app(BlockTypeRegistry::class)->register(new BlockType('profile_only', 'Profile only'));
+    $page = livePageWithBlocks();
+    app(PageDrafts::class)->ensureDraft($page);
+
+    Livewire::test(BlocksRelationManager::class, ['ownerRecord' => $page, 'pageClass' => EditCmsPage::class])
+        ->callTableAction('create', data: ['type' => 'profile_only', 'name' => 'Odd', 'sort_order' => 4, 'data_json' => '{"a": [1, 2]}'])
+        ->assertHasNoTableActionErrors();
+
+    expect($page->draftBlocks()->where('name', 'Odd')->sole()->data)->toBe(['a' => [1, 2]]);
 });
 
 it('shows a block of a type nobody registered, labelled as unknown, and lets it be edited', function () {
