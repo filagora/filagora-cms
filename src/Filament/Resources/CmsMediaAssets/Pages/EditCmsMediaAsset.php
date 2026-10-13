@@ -22,7 +22,7 @@ class EditCmsMediaAsset extends EditRecord
     {
         return [
             Action::make('open_file')
-                ->label('Open file')
+                ->label(__('filagora-cms::ui.edit_cms_media_asset.open_file'))
                 ->icon('heroicon-o-arrow-top-right-on-square')
                 ->color('gray')
                 ->url(fn (): ?string => $this->asset()->publicUrl(), shouldOpenInNewTab: true)
@@ -30,8 +30,8 @@ class EditCmsMediaAsset extends EditRecord
             DeleteAction::make()
                 ->schema([
                     Toggle::make('confirm_in_use_delete')
-                        ->label('I understand this asset may still be referenced by CMS blocks')
-                        ->helperText('Required only when the asset is still in use.')
+                        ->label(__('filagora-cms::ui.edit_cms_media_asset.i_understand_this_asset_may_still'))
+                        ->helperText(__('filagora-cms::ui.edit_cms_media_asset.required_only_when_the_asset_is'))
                         ->visible(fn (): bool => app(MediaAssetUsage::class)->countForAsset($this->asset()) > 0),
                 ])
                 ->modalDescription(function (): string {
@@ -47,8 +47,8 @@ class EditCmsMediaAsset extends EditRecord
                     if ($uses > 0 && ! (bool) ($data['confirm_in_use_delete'] ?? false)) {
                         Notification::make()
                             ->warning()
-                            ->title('Confirm deletion of in-use asset')
-                            ->body('This media asset is still used by '.$uses.' CMS block'.($uses === 1 ? '' : 's').'. Tick the confirmation box to delete it anyway.')
+                            ->title(__('filagora-cms::ui.edit_cms_media_asset.confirm_deletion_of_inuse_asset'))
+                            ->body(trans_choice('filagora-cms::ui.common.media_still_used', $uses, ['count' => $uses]))
                             ->send();
                         $action->halt();
 

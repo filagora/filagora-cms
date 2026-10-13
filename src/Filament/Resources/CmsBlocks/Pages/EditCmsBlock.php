@@ -65,45 +65,45 @@ class EditCmsBlock extends EditRecord
 
     protected function getSaveFormAction(): Action
     {
-        return parent::getSaveFormAction()->label('Save draft');
+        return parent::getSaveFormAction()->label(__('filagora-cms::ui.edit_cms_block.save_draft'));
     }
 
     protected function getHeaderActions(): array
     {
         return [
             Action::make('publish')
-                ->label('Publish')
+                ->label(__('filagora-cms::ui.edit_cms_block.publish'))
                 ->icon('heroicon-o-rocket-launch')
                 ->color('success')
-                ->modalHeading('Publish block')
-                ->modalDescription('This makes the draft live everywhere this block is rendered and records a version.')
+                ->modalHeading(__('filagora-cms::ui.edit_cms_block.publish_block'))
+                ->modalDescription(__('filagora-cms::ui.edit_cms_block.this_makes_the_draft_live_everywhere'))
                 ->visible(fn (): bool => $this->block()->draftCopy()->exists())
                 ->schema([
-                    Textarea::make('summary')->label('Version summary')->rows(2)->maxLength(255),
+                    Textarea::make('summary')->label(__('filagora-cms::ui.edit_cms_block.version_summary'))->rows(2)->maxLength(255),
                 ])
                 ->action(function (array $data): void {
                     try {
                         $version = app(BlockDrafts::class)->publish($this->block(), auth()->user(), $data['summary'] ?? null);
                     } catch (DraftOperationFailed $e) {
-                        Notification::make()->danger()->title('Cannot publish')->body($e->getMessage())->send();
+                        Notification::make()->danger()->title(__('filagora-cms::ui.edit_cms_block.cannot_publish'))->body($e->getMessage())->send();
 
                         return;
                     }
 
                     $this->refreshAfterChange();
-                    Notification::make()->success()->title('Published')->body('Version '.$version->version_number.' is now live.')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_block.published'))->body(__('filagora-cms::ui.common.version_is_live', ['number' => $version->version_number]))->send();
                 }),
             Action::make('discard_draft')
-                ->label('Discard draft')
+                ->label(__('filagora-cms::ui.edit_cms_block.discard_draft'))
                 ->icon('heroicon-o-arrow-uturn-left')
                 ->color('danger')
                 ->requiresConfirmation()
-                ->modalDescription('Throws away the unpublished changes to this block.')
+                ->modalDescription(__('filagora-cms::ui.edit_cms_block.throws_away_the_unpublished_changes_to'))
                 ->visible(fn (): bool => $this->block()->draftCopy()->exists())
                 ->action(function (): void {
                     app(BlockDrafts::class)->discard($this->block());
                     $this->refreshAfterChange();
-                    Notification::make()->success()->title('Draft discarded')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_block.draft_discarded'))->send();
                 }),
             DeleteAction::make()
                 ->before(fn () => app(BlockDrafts::class)->discard($this->block())),

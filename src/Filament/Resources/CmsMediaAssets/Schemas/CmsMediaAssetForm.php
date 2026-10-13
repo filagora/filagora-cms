@@ -20,9 +20,9 @@ class CmsMediaAssetForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('File')->schema([
+            Section::make(__('filagora-cms::ui.cms_media_asset_form.file'))->schema([
                 ToggleButtons::make('folder_mode')
-                    ->label('Folder')
+                    ->label(__('filagora-cms::ui.cms_media_asset_form.folder'))
                     ->options(['existing' => 'Choose existing', 'new' => 'New folder'])
                     ->default('existing')
                     ->inline()
@@ -30,22 +30,22 @@ class CmsMediaAssetForm
                     ->dehydrated(false)
                     ->visible(fn (string $operation): bool => $operation === 'create'),
                 Select::make('existing_subdirectory')
-                    ->label('Existing folder')
+                    ->label(__('filagora-cms::ui.cms_media_asset_form.existing_folder'))
                     ->options(fn (): array => app(MediaAssets::class)->folders())
                     ->searchable()
                     ->placeholder(self::ROOT.' (root)')
                     ->dehydrated(false)
                     ->visible(fn (string $operation, Get $get): bool => $operation === 'create' && ($get('folder_mode') ?? 'existing') !== 'new'),
                 TextInput::make('new_subdirectory')
-                    ->label('New folder')
-                    ->placeholder('heroes/homepage')
+                    ->label(__('filagora-cms::ui.cms_media_asset_form.new_folder'))
+                    ->placeholder(__('filagora-cms::ui.cms_media_asset_form.heroeshomepage'))
                     ->rule('regex:/^[A-Za-z0-9\-_\/]*$/')
                     ->validationMessages(['regex' => 'Folder names may only contain letters, numbers, dashes, underscores, and forward slashes.'])
                     ->dehydrated(false)
                     ->visible(fn (string $operation, Get $get): bool => $operation === 'create' && ($get('folder_mode') ?? 'existing') === 'new')
                     ->live(onBlur: true),
                 FileUpload::make('path')
-                    ->label('File')
+                    ->label(__('filagora-cms::ui.cms_media_asset_form.file'))
                     ->disk('public')
                     ->directory(fn (Get $get): string => self::uploadDirectory(self::selectedSubdirectory($get)))
                     ->visibility('public')
@@ -54,7 +54,7 @@ class CmsMediaAssetForm
                     ->required()
                     ->disabled(fn (string $operation): bool => $operation === 'edit')
                     ->columnSpanFull(),
-                TextInput::make('alt_text')->label('Alt text')->maxLength(255)->helperText('Describe the image for people who cannot see it.'),
+                TextInput::make('alt_text')->label(__('filagora-cms::ui.cms_media_asset_form.alt_text'))->maxLength(255)->helperText(__('filagora-cms::ui.cms_media_asset_form.describe_the_image_for_people_who')),
             ]),
         ]);
     }

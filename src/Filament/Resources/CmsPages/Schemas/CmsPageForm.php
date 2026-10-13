@@ -47,12 +47,12 @@ class CmsPageForm
 
     public static function contentSection(): Section
     {
-        return Section::make('Page content')
-            ->description('Set the page title, URL, and summary content first.')
+        return Section::make(__('filagora-cms::ui.cms_page_form.page_content'))
+            ->description(__('filagora-cms::ui.cms_page_form.set_the_page_title_url_and'))
             ->columnSpan(1)
             ->schema([
                 TextInput::make('title')
-                    ->label('Page title')
+                    ->label(__('filagora-cms::ui.cms_page_form.page_title'))
                     ->required()
                     ->maxLength(255)
                     ->live(onBlur: true)
@@ -62,27 +62,27 @@ class CmsPageForm
                         }
                     }),
                 TextInput::make('slug')
-                    ->label('Slug')
+                    ->label(__('filagora-cms::ui.cms_page_form.slug'))
                     ->required()
                     ->maxLength(255)
                     ->unique(table: (new (Models::class('page')))->getTable(), column: 'slug', ignorable: fn (?CmsPage $record) => $record)
-                    ->helperText('Used for the default page route at /pages/{slug}.'),
+                    ->helperText(__('filagora-cms::ui.cms_page_form.used_for_the_default_page_route')),
                 TextInput::make('custom_route')
-                    ->label('Custom route')
+                    ->label(__('filagora-cms::ui.cms_page_form.custom_route'))
                     ->maxLength(255)
                     ->nullable()
-                    ->placeholder('/my-custom-path')
+                    ->placeholder(__('filagora-cms::ui.cms_page_form.mycustompath'))
                     ->rule('regex:/^\/?[A-Za-z0-9\-_\/]+$/')
                     ->validationMessages(['regex' => 'The custom route may only contain letters, numbers, dashes, underscores, and forward slashes.'])
-                    ->helperText('Use this when the page should live at a custom path like /privacy instead of /pages/{slug}. A leading slash is added for you.')
+                    ->helperText(__('filagora-cms::ui.cms_page_form.use_this_when_the_page_should'))
                     ->columnSpanFull(),
                 Textarea::make('excerpt')
-                    ->label('Excerpt')
+                    ->label(__('filagora-cms::ui.cms_page_form.excerpt'))
                     ->rows(4)
                     ->columnSpanFull()
-                    ->helperText('Optional short summary used for listings, previews, or search context.'),
+                    ->helperText(__('filagora-cms::ui.cms_page_form.optional_short_summary_used_for_listings')),
                 Select::make('tag_ids')
-                    ->label('Tags')
+                    ->label(__('filagora-cms::ui.cms_page_form.tags'))
                     ->options(fn (): array => Models::class('tag')::query()->orderBy('name')->pluck('name', 'id')->all())
                     ->multiple()
                     ->preload()
@@ -94,12 +94,12 @@ class CmsPageForm
 
     public static function publishingSection(): Section
     {
-        return Section::make('Publishing')
-            ->description('Changes are saved to a draft. Use Preview to check them, then Publish to make them live.')
+        return Section::make(__('filagora-cms::ui.cms_page_form.publishing'))
+            ->description(__('filagora-cms::ui.cms_page_form.changes_are_saved_to_a_draft'))
             ->columnSpan(1)
             ->schema([
                 Placeholder::make('workflow_status')
-                    ->label('Status')
+                    ->label(__('filagora-cms::ui.cms_page_form.status'))
                     ->content(fn (?CmsPage $record): string => $record === null
                         ? 'New pages start as drafts and are not public until published.'
                         : app(WorkflowLabels::class)->describePage($record))
@@ -110,12 +110,12 @@ class CmsPageForm
 
     public static function seoSection(): Section
     {
-        return Section::make('SEO')
-            ->description('Optional fields for search engines and social previews.')
+        return Section::make(__('filagora-cms::ui.cms_page_form.seo'))
+            ->description(__('filagora-cms::ui.cms_page_form.optional_fields_for_search_engines_and'))
             ->columnSpan(1)
             ->schema([
-                TextInput::make('seo_title')->label('SEO title')->maxLength(255),
-                Textarea::make('seo_description')->label('SEO description')->rows(3)->columnSpanFull(),
+                TextInput::make('seo_title')->label(__('filagora-cms::ui.cms_page_form.seo_title'))->maxLength(255),
+                Textarea::make('seo_description')->label(__('filagora-cms::ui.cms_page_form.seo_description'))->rows(3)->columnSpanFull(),
             ])
             ->columns(1);
     }

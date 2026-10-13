@@ -37,11 +37,11 @@ final class DraftVariantActions
             try {
                 $change();
             } catch (ValidationException $e) {
-                Notification::make()->danger()->title('Cannot change variants')->body(collect($e->errors())->flatten()->implode(' '))->send();
+                Notification::make()->danger()->title(__('filagora-cms::ui.draft_variant_actions.cannot_change_variants'))->body(collect($e->errors())->flatten()->implode(' '))->send();
 
                 return;
             } catch (DraftOperationFailed $e) {
-                Notification::make()->danger()->title('Cannot change variants')->body($e->getMessage())->send();
+                Notification::make()->danger()->title(__('filagora-cms::ui.draft_variant_actions.cannot_change_variants'))->body($e->getMessage())->send();
 
                 return;
             }
@@ -52,50 +52,50 @@ final class DraftVariantActions
 
         return ActionGroup::make([
             Action::make('switch_variant')
-                ->label('Switch variant')
+                ->label(__('filagora-cms::ui.draft_variant_actions.switch_variant'))
                 ->icon('heroicon-o-arrows-right-left')
                 ->visible(fn (): bool => $parked() !== [])
-                ->modalDescription('The current draft is kept as a variant and the one you pick becomes the working draft.')
+                ->modalDescription(__('filagora-cms::ui.draft_variant_actions.the_current_draft_is_kept_as'))
                 ->schema(fn (): array => [
-                    Select::make('name')->label('Variant')->options($options($parked()))->required(),
+                    Select::make('name')->label(__('filagora-cms::ui.draft_variant_actions.variant'))->options($options($parked()))->required(),
                 ])
                 ->action(fn (array $data) => $run(
                     fn () => $service()->switchVariant($record(), (string) $data['name'], auth()->user()),
                     'Switched variant',
                 )),
             Action::make('new_variant')
-                ->label('New variant')
+                ->label(__('filagora-cms::ui.draft_variant_actions.new_variant'))
                 ->icon('heroicon-o-plus')
-                ->modalDescription('The current draft is kept as a variant and the new one becomes the working draft.')
+                ->modalDescription(__('filagora-cms::ui.draft_variant_actions.the_current_draft_is_kept_as_2'))
                 ->schema([
-                    TextInput::make('name')->label('Name')->required()->maxLength(100),
-                    Toggle::make('from_live')->label('Start from the live version instead of copying the current draft'),
+                    TextInput::make('name')->label(__('filagora-cms::ui.draft_variant_actions.name'))->required()->maxLength(100),
+                    Toggle::make('from_live')->label(__('filagora-cms::ui.draft_variant_actions.start_from_the_live_version_instead')),
                 ])
                 ->action(fn (array $data) => $run(
                     fn () => $service()->createVariant($record(), (string) $data['name'], (bool) ($data['from_live'] ?? false), auth()->user()),
                     'Variant created',
                 )),
             Action::make('rename_variant')
-                ->label('Rename this variant')
+                ->label(__('filagora-cms::ui.draft_variant_actions.rename_this_variant'))
                 ->icon('heroicon-o-pencil')
                 ->visible(fn (): bool => $active() !== null)
                 ->fillForm(fn (): array => ['name' => $active()])
                 ->schema([
-                    TextInput::make('name')->label('Name')->required()->maxLength(100),
+                    TextInput::make('name')->label(__('filagora-cms::ui.draft_variant_actions.name'))->required()->maxLength(100),
                 ])
                 ->action(fn (array $data) => $run(
                     fn () => $service()->renameVariant($record(), (string) $active(), (string) $data['name']),
                     'Variant renamed',
                 )),
             Action::make('delete_variant')
-                ->label('Delete a variant')
+                ->label(__('filagora-cms::ui.draft_variant_actions.delete_a_variant'))
                 ->icon('heroicon-o-trash')
                 ->color('danger')
                 ->visible(fn (): bool => $parked() !== [])
                 ->requiresConfirmation()
-                ->modalDescription('Permanently deletes the chosen variant. The working draft is not affected.')
+                ->modalDescription(__('filagora-cms::ui.draft_variant_actions.permanently_deletes_the_chosen_variant_the'))
                 ->schema(fn (): array => [
-                    Select::make('name')->label('Variant')->options($options($parked()))->required(),
+                    Select::make('name')->label(__('filagora-cms::ui.draft_variant_actions.variant'))->options($options($parked()))->required(),
                 ])
                 ->action(fn (array $data) => $run(
                     fn () => $service()->deleteVariant($record(), (string) $data['name']),

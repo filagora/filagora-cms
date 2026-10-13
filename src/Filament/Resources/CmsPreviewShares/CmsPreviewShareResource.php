@@ -38,7 +38,7 @@ class CmsPreviewShareResource extends Resource
 
     public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return app(NavigationGroupRegistry::class)->label('cms');
+        return app(NavigationGroupRegistry::class)->label(__('filagora-cms::ui.cms_preview_share_resource.cms'));
     }
 
     public static function getNavigationLabel(): string
@@ -66,9 +66,9 @@ class CmsPreviewShareResource extends Resource
         return $table
             ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('label')->placeholder('No label')->searchable()->weight('medium'),
+                TextColumn::make('label')->placeholder(__('filagora-cms::ui.cms_preview_share_resource.no_label'))->searchable()->weight('medium'),
                 TextColumn::make('contents')
-                    ->label('Shows')
+                    ->label(__('filagora-cms::ui.cms_preview_share_resource.shows'))
                     ->state(function (CmsPreviewShare $record): string {
                         $parts = [];
 
@@ -91,29 +91,29 @@ class CmsPreviewShareResource extends Resource
                     ->badge()
                     ->color(fn (string $state): string => $state === 'Active' ? 'success' : 'gray'),
                 TextColumn::make('expires_at')->dateTime()->sortable(),
-                TextColumn::make('open_count')->label('Opens')->sortable(),
-                TextColumn::make('last_opened_at')->dateTime()->placeholder('Never'),
-                TextColumn::make('createdBy.'.UserModel::titleAttribute())->label('Created by'),
+                TextColumn::make('open_count')->label(__('filagora-cms::ui.cms_preview_share_resource.opens'))->sortable(),
+                TextColumn::make('last_opened_at')->dateTime()->placeholder(__('filagora-cms::ui.cms_preview_share_resource.never')),
+                TextColumn::make('createdBy.'.UserModel::titleAttribute())->label(__('filagora-cms::ui.cms_preview_share_resource.created_by')),
             ])
             ->recordActions([
                 Action::make('show_link')
-                    ->label('Show link')
+                    ->label(__('filagora-cms::ui.cms_preview_share_resource.show_link'))
                     ->icon('heroicon-o-link')
                     ->visible(fn (CmsPreviewShare $record): bool => $record->isUsable())
                     ->action(fn (CmsPreviewShare $record) => Notification::make()
-                        ->title('Preview link')
+                        ->title(__('filagora-cms::ui.cms_preview_share_resource.preview_link'))
                         ->body($record->url() ?? 'Define the route named in filagora-cms.preview.share_route to open links. Token: '.$record->getRawOriginal('token'))
                         ->persistent()
                         ->send()),
                 Action::make('revoke')
-                    ->label('Revoke')
+                    ->label(__('filagora-cms::ui.cms_preview_share_resource.revoke'))
                     ->icon('heroicon-o-no-symbol')
                     ->color('danger')
                     ->requiresConfirmation()
                     ->visible(fn (CmsPreviewShare $record): bool => $record->revoked_at === null)
                     ->action(function (CmsPreviewShare $record): void {
                         app(PreviewShares::class)->revoke($record);
-                        Notification::make()->success()->title('Link revoked')->send();
+                        Notification::make()->success()->title(__('filagora-cms::ui.cms_preview_share_resource.link_revoked'))->send();
                     }),
             ]);
     }

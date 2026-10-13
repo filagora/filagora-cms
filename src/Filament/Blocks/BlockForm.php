@@ -46,7 +46,7 @@ final class BlockForm
 
         $components = [
             Select::make('type')
-                ->label('Type')
+                ->label(__('filagora-cms::ui.block_form.type'))
                 ->options(function (?CmsBlock $record) use ($registry): array {
                     $options = $registry->options();
 
@@ -64,9 +64,9 @@ final class BlockForm
                     $set('data', $registry->get((string) $state)?->hydrate([]) ?? []);
                     $set('data_json', '');
                 }),
-            TextInput::make('name')->label('Name')->maxLength(255),
-            TextInput::make('sort_order')->label('Display order')->numeric()->minValue(0)->default(0)->required()
-                ->helperText('Lower values appear first.'),
+            TextInput::make('name')->label(__('filagora-cms::ui.block_form.name'))->maxLength(255),
+            TextInput::make('sort_order')->label(__('filagora-cms::ui.block_form.display_order'))->numeric()->minValue(0)->default(0)->required()
+                ->helperText(__('filagora-cms::ui.block_form.lower_values_appear_first')),
         ];
 
         foreach ($registry->all() as $key => $type) {
@@ -82,10 +82,10 @@ final class BlockForm
         }
 
         $components[] = Textarea::make('data_json')
-            ->label('Content (JSON)')
+            ->label(__('filagora-cms::ui.block_form.content_json'))
             ->rows(14)
             ->rules(['nullable', 'json'])
-            ->helperText('The block\'s content as JSON. Leave empty for none.')
+            ->helperText(__('filagora-cms::ui.block_form.the_blocks_content_as_json_leave'))
             ->visible(fn (Get $get): bool => ! ($registry->get((string) $get('type'))?->hasForm() ?? false))
             ->columnSpanFull();
 
@@ -260,11 +260,11 @@ final class BlockForm
                 ->options(fn (): array => self::imageOptions())
                 ->searchable()
                 ->helperText($field->help ?? 'Pick an uploaded image, or leave blank and paste a URL below.'),
-            TextInput::make($field->urlKey)->label($field->label.' URL')->url()->helperText('Used when no library image is chosen.'),
+            TextInput::make($field->urlKey)->label($field->label.' URL')->url()->helperText(__('filagora-cms::ui.block_form.used_when_no_library_image_is')),
         ];
 
         if ($field->altKey !== null) {
-            $components[] = TextInput::make($field->altKey)->label('Alt text')->helperText('If left blank, the chosen image\'s alt text is used.');
+            $components[] = TextInput::make($field->altKey)->label(__('filagora-cms::ui.block_form.alt_text'))->helperText(__('filagora-cms::ui.block_form.if_left_blank_the_chosen_images'));
         }
 
         return $components;

@@ -29,27 +29,27 @@ final class SharePreviewLinkAction
     public static function make(Closure $record, Closure $service): Action
     {
         return Action::make('share_preview')
-            ->label('Share preview link')
+            ->label(__('filagora-cms::ui.share_preview_link_action.share_preview_link'))
             ->icon('heroicon-o-link')
             ->color('gray')
             ->visible(fn (): bool => $service()->variantNames($record()) !== [])
-            ->modalHeading('Share a preview link')
-            ->modalDescription('Anyone with the link can see this draft, without logging in, until it expires or you revoke it from Preview links. Visitors still see the published site.')
-            ->modalSubmitActionLabel('Create link')
+            ->modalHeading(__('filagora-cms::ui.share_preview_link_action.share_a_preview_link'))
+            ->modalDescription(__('filagora-cms::ui.share_preview_link_action.anyone_with_the_link_can_see'))
+            ->modalSubmitActionLabel(__('filagora-cms::ui.share_preview_link_action.create_link'))
             ->fillForm(fn (): array => ['variant' => $service()->activeVariantName($record()), 'days' => 7])
             ->schema(fn (): array => [
                 Select::make('variant')
-                    ->label('Draft variant to show')
+                    ->label(__('filagora-cms::ui.share_preview_link_action.draft_variant_to_show'))
                     ->options(array_combine($service()->variantNames($record()), $service()->variantNames($record())))
                     ->required(),
-                TextInput::make('label')->label('Label (only you see it)')->maxLength(120),
+                TextInput::make('label')->label(__('filagora-cms::ui.share_preview_link_action.label_only_you_see_it'))->maxLength(120),
                 Select::make('days')
-                    ->label('Expires after')
+                    ->label(__('filagora-cms::ui.share_preview_link_action.expires_after'))
                     ->options([1 => '1 day', 3 => '3 days', 7 => '7 days', 30 => '30 days'])
                     ->required(),
                 Toggle::make('include_session')
-                    ->label('Also include everything in my current preview')
-                    ->helperText('Adds the menus and pages in your preview, each at its current working draft.'),
+                    ->label(__('filagora-cms::ui.share_preview_link_action.also_include_everything_in_my_current'))
+                    ->helperText(__('filagora-cms::ui.share_preview_link_action.adds_the_menus_and_pages_in')),
             ])
             ->action(function (array $data) use ($record): void {
                 $model = $record();
@@ -72,14 +72,14 @@ final class SharePreviewLinkAction
                         $data['label'] ?? null,
                     );
                 } catch (ValidationException $e) {
-                    Notification::make()->danger()->title('Cannot create link')->body(collect($e->errors())->flatten()->implode(' '))->send();
+                    Notification::make()->danger()->title(__('filagora-cms::ui.share_preview_link_action.cannot_create_link'))->body(collect($e->errors())->flatten()->implode(' '))->send();
 
                     return;
                 }
 
                 Notification::make()
                     ->success()
-                    ->title('Preview link created')
+                    ->title(__('filagora-cms::ui.share_preview_link_action.preview_link_created'))
                     ->body($share->url() ?? 'Define the route named in filagora-cms.preview.share_route to open links. Token: '.$share->getRawOriginal('token'))
                     ->persistent()
                     ->send();

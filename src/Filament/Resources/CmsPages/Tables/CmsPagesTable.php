@@ -27,7 +27,7 @@ class CmsPagesTable
                 TextColumn::make('slug')->searchable(),
                 TextColumn::make('custom_route')->placeholder('-')->searchable(),
                 TextColumn::make('status')
-                    ->label('State')
+                    ->label(__('filagora-cms::ui.cms_pages_table.state'))
                     ->badge()
                     ->state(fn (CmsPage $record): string => app(WorkflowLabels::class)->pageBadge($record)['label'])
                     ->color(fn (CmsPage $record): string => app(WorkflowLabels::class)->pageBadge($record)['color']),

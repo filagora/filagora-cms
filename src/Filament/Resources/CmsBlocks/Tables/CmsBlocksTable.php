@@ -23,14 +23,14 @@ class CmsBlocksTable
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('draftCopy'))
             ->defaultSort('name')
             ->columns([
-                TextColumn::make('name')->placeholder('Unnamed block')->searchable()->sortable(),
+                TextColumn::make('name')->placeholder(__('filagora-cms::ui.cms_blocks_table.unnamed_block'))->searchable()->sortable(),
                 TextColumn::make('slug')->searchable()->sortable(),
                 TextColumn::make('type')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => app(BlockTypeRegistry::class)->label($state)),
-                IconColumn::make('is_published')->label('Published')->boolean(),
+                IconColumn::make('is_published')->label(__('filagora-cms::ui.cms_blocks_table.published'))->boolean(),
                 TextColumn::make('pending')
-                    ->label('Draft')
+                    ->label(__('filagora-cms::ui.cms_blocks_table.draft'))
                     ->badge()
                     ->state(fn (CmsBlock $record): ?string => app(BlockDrafts::class)->hasPendingChanges($record) ? 'Unpublished changes' : null)
                     ->color('warning')

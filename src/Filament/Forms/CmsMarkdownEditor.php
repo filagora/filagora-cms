@@ -23,7 +23,7 @@ class CmsMarkdownEditor extends MarkdownEditor
             ['table'],
             ['undo', 'redo'],
         ]);
-        $this->helperText('Markdown is supported. Inline HTML in existing content keeps working.');
+        $this->helperText(__('filagora-cms::ui.cms_markdown_editor.markdown_is_supported_inline_html_in'));
     }
 
     public function rows(int $rows): static

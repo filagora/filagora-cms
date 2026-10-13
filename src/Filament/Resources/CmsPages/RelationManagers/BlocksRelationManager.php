@@ -60,26 +60,26 @@ class BlocksRelationManager extends RelationManager
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('liveBlock'))
             ->recordTitleAttribute('name')
             ->defaultSort('sort_order')
-            ->description('Blocks are edited in the draft; they only appear on the live page when you publish. Lower display order values appear first.')
+            ->description(__('filagora-cms::ui.blocks_relation_manager.blocks_are_edited_in_the_draft'))
             ->columns([
-                TextColumn::make('sort_order')->label('Order')->numeric()->sortable(),
+                TextColumn::make('sort_order')->label(__('filagora-cms::ui.blocks_relation_manager.order'))->numeric()->sortable(),
                 TextColumn::make('change_status')
-                    ->label('Changes')
+                    ->label(__('filagora-cms::ui.blocks_relation_manager.changes'))
                     ->badge()
                     ->state(fn (CmsBlock $record): ?string => app(PageDraftDiff::class)->blockStatus($record, $record->liveBlock instanceof CmsBlock ? $record->liveBlock : null))
                     ->color(fn (?string $state): string => $state === 'New' ? 'success' : 'warning')
                     ->placeholder('—'),
                 TextColumn::make('type')
-                    ->label('Type')
+                    ->label(__('filagora-cms::ui.blocks_relation_manager.type'))
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => app(BlockTypeRegistry::class)->label($state)),
-                TextColumn::make('name')->label('Name')->placeholder('Unnamed block')->searchable(),
-                TextColumn::make('updated_at')->label('Updated')->dateTime()->sortable(),
+                TextColumn::make('name')->label(__('filagora-cms::ui.blocks_relation_manager.name'))->placeholder(__('filagora-cms::ui.blocks_relation_manager.unnamed_block'))->searchable(),
+                TextColumn::make('updated_at')->label(__('filagora-cms::ui.blocks_relation_manager.updated'))->dateTime()->sortable(),
             ])
             ->headerActions([
                 CreateAction::make()
-                    ->label('Add block')
-                    ->modalHeading('Add page block')
+                    ->label(__('filagora-cms::ui.blocks_relation_manager.add_block'))
+                    ->modalHeading(__('filagora-cms::ui.blocks_relation_manager.add_page_block'))
                     ->mutateDataUsing(fn (array $data): array => self::prepare($data))
                     ->after(fn () => $this->draftChanged()),
             ])

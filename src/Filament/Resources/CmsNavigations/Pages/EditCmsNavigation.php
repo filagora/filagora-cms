@@ -71,7 +71,7 @@ class EditCmsNavigation extends EditRecord
 
     protected function getSaveFormAction(): Action
     {
-        return parent::getSaveFormAction()->label('Save draft');
+        return parent::getSaveFormAction()->label(__('filagora-cms::ui.edit_cms_navigation.save_draft'));
     }
 
     public function getSubheading(): string|Htmlable|null
@@ -95,52 +95,52 @@ class EditCmsNavigation extends EditRecord
                 fn (): NavigationDrafts => app(NavigationDrafts::class),
             ),
             Action::make('preview')
-                ->label('Preview')
+                ->label(__('filagora-cms::ui.edit_cms_navigation.preview'))
                 ->icon('heroicon-o-eye')
                 ->color('gray')
                 ->action(function (): void {
                     app(NavigationDrafts::class)->ensureDraft($this->menu(), auth()->user());
                     app(PreviewSession::class)->addNavigation($this->menu());
 
-                    Notification::make()->success()->title('Previewing this menu')->body('Browse the site: this menu shows its draft until you leave the preview.')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_navigation.previewing_this_menu'))->body(__('filagora-cms::ui.edit_cms_navigation.browse_the_site_this_menu_shows'))->send();
                 }),
             Action::make('publish')
-                ->label('Publish')
+                ->label(__('filagora-cms::ui.edit_cms_navigation.publish'))
                 ->icon('heroicon-o-rocket-launch')
                 ->color('success')
-                ->modalHeading('Publish menu changes')
+                ->modalHeading(__('filagora-cms::ui.edit_cms_navigation.publish_menu_changes'))
                 ->modalDescription(fn (): HtmlString => $this->publishDescription())
                 ->schema([
-                    Textarea::make('summary')->label('Version summary')->rows(2)->maxLength(255),
+                    Textarea::make('summary')->label(__('filagora-cms::ui.edit_cms_navigation.version_summary'))->rows(2)->maxLength(255),
                 ])
                 ->action(function (array $data): void {
                     try {
                         $version = app(NavigationDrafts::class)->publish($this->menu(), auth()->user(), $data['summary'] ?? null);
                     } catch (DraftOperationFailed $e) {
-                        Notification::make()->danger()->title('Cannot publish')->body($e->getMessage())->send();
+                        Notification::make()->danger()->title(__('filagora-cms::ui.edit_cms_navigation.cannot_publish'))->body($e->getMessage())->send();
 
                         return;
                     }
 
                     $this->refreshWorkflowState();
                     $this->fillForm();
-                    Notification::make()->success()->title('Published')->body('Version '.$version->version_number.' is now live.')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_navigation.published'))->body(__('filagora-cms::ui.common.version_is_live', ['number' => $version->version_number]))->send();
                 }),
             Action::make('schedule')
                 ->label(fn (): string => $this->menu()->draft?->scheduled_publish_at ? 'Reschedule' : 'Schedule')
                 ->icon('heroicon-o-clock')
                 ->color('info')
                 ->schema([
-                    DateTimePicker::make('publish_at')->label('Publish at')->required()->minDate(now()),
-                    Textarea::make('summary')->label('Version summary')->rows(2)->maxLength(255),
+                    DateTimePicker::make('publish_at')->label(__('filagora-cms::ui.edit_cms_navigation.publish_at'))->required()->minDate(now()),
+                    Textarea::make('summary')->label(__('filagora-cms::ui.edit_cms_navigation.version_summary'))->rows(2)->maxLength(255),
                 ])
                 ->action(function (array $data): void {
                     app(NavigationDrafts::class)->schedule($this->menu(), Carbon::parse($data['publish_at']), auth()->user(), $data['summary'] ?? null);
                     $this->refreshWorkflowState();
-                    Notification::make()->success()->title('Publish scheduled')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_navigation.publish_scheduled'))->send();
                 }),
             Action::make('cancel_schedule')
-                ->label('Cancel schedule')
+                ->label(__('filagora-cms::ui.edit_cms_navigation.cancel_schedule'))
                 ->color('gray')
                 ->requiresConfirmation()
                 ->visible(fn (): bool => $this->menu()->draft()->whereNotNull('scheduled_publish_at')->exists())
@@ -149,17 +149,17 @@ class EditCmsNavigation extends EditRecord
                     $this->refreshWorkflowState();
                 }),
             Action::make('discard_draft')
-                ->label('Discard draft')
+                ->label(__('filagora-cms::ui.edit_cms_navigation.discard_draft'))
                 ->icon('heroicon-o-arrow-uturn-left')
                 ->color('danger')
                 ->requiresConfirmation()
-                ->modalDescription('Throws away all unpublished changes to this menu.')
+                ->modalDescription(__('filagora-cms::ui.edit_cms_navigation.throws_away_all_unpublished_changes_to'))
                 ->visible(fn (): bool => (bool) $this->menu()->draft()->first()?->is_dirty)
                 ->action(function (): void {
                     app(NavigationDrafts::class)->discard($this->menu());
                     $this->refreshWorkflowState();
                     $this->fillForm();
-                    Notification::make()->success()->title('Draft discarded')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_navigation.draft_discarded'))->send();
                 }),
             DeleteAction::make(),
         ];
