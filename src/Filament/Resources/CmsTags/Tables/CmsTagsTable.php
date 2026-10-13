@@ -19,7 +19,7 @@ class CmsTagsTable
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('slug')->searchable(),
-                TextColumn::make('pages_count')->counts('pages')->label('Pages')->sortable(),
+                TextColumn::make('pages_count')->counts('pages')->label(__('filagora-cms::ui.cms_tags_table.pages'))->sortable(),
                 TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([EditAction::make()])

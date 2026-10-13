@@ -97,6 +97,10 @@ class CmsServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../config/filagora-cms.php' => config_path('filagora-cms.php'),
             ], 'filagora-cms-config');
+
+            $this->publishes([
+                __DIR__.'/../resources/lang' => $this->app->langPath('vendor/filagora-cms'),
+            ], 'filagora-cms-lang');
         }
     }
 

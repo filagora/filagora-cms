@@ -76,7 +76,7 @@ class EditCmsPage extends EditRecord
 
     protected function getSaveFormAction(): Action
     {
-        return parent::getSaveFormAction()->label('Save draft');
+        return parent::getSaveFormAction()->label(__('filagora-cms::ui.edit_cms_page.save_draft'));
     }
 
     public function getSubheading(): string|Htmlable|null
@@ -100,7 +100,7 @@ class EditCmsPage extends EditRecord
                 fn (): PageDrafts => app(PageDrafts::class),
             ),
             Action::make('preview')
-                ->label('Preview')
+                ->label(__('filagora-cms::ui.edit_cms_page.preview'))
                 ->icon('heroicon-o-eye')
                 ->color('gray')
                 ->action(function (): void {
@@ -111,10 +111,10 @@ class EditCmsPage extends EditRecord
                     $this->redirect(app(PageUrlResolver::class)->urlFor($drafts->previewPage($this->page())));
                 }),
             Action::make('publish')
-                ->label('Publish')
+                ->label(__('filagora-cms::ui.edit_cms_page.publish'))
                 ->icon('heroicon-o-rocket-launch')
                 ->color('success')
-                ->modalHeading('Publish changes')
+                ->modalHeading(__('filagora-cms::ui.edit_cms_page.publish_changes'))
                 ->modalDescription(function (): string {
                     $count = app(PageDraftDiff::class)->forPage($this->page())['count'];
                     $summary = $count === 0
@@ -126,39 +126,39 @@ class EditCmsPage extends EditRecord
                         : $summary;
                 })
                 ->schema([
-                    Textarea::make('summary')->label('Version summary')->rows(2)->maxLength(255),
+                    Textarea::make('summary')->label(__('filagora-cms::ui.edit_cms_page.version_summary'))->rows(2)->maxLength(255),
                 ])
                 ->action(function (array $data): void {
                     try {
                         $version = app(PageDrafts::class)->publish($this->page(), auth()->user(), $data['summary'] ?? null);
                     } catch (ValidationException $e) {
-                        Notification::make()->danger()->title('Cannot publish')->body(collect($e->errors())->flatten()->implode(' '))->send();
+                        Notification::make()->danger()->title(__('filagora-cms::ui.edit_cms_page.cannot_publish'))->body(collect($e->errors())->flatten()->implode(' '))->send();
 
                         return;
                     } catch (DraftOperationFailed $e) {
-                        Notification::make()->danger()->title('Cannot publish')->body($e->getMessage())->send();
+                        Notification::make()->danger()->title(__('filagora-cms::ui.edit_cms_page.cannot_publish'))->body($e->getMessage())->send();
 
                         return;
                     }
 
                     $this->refreshWorkflowState();
-                    Notification::make()->success()->title('Published')->body('Version '.$version->version_number.' is now live.')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_page.published'))->body(__('filagora-cms::ui.common.version_is_live', ['number' => $version->version_number]))->send();
                 }),
             Action::make('schedule')
                 ->label(fn (): string => $this->page()->draft?->scheduled_publish_at ? 'Reschedule' : 'Schedule')
                 ->icon('heroicon-o-clock')
                 ->color('info')
                 ->schema([
-                    DateTimePicker::make('publish_at')->label('Publish at')->required()->minDate(now()),
-                    Textarea::make('summary')->label('Version summary')->rows(2)->maxLength(255),
+                    DateTimePicker::make('publish_at')->label(__('filagora-cms::ui.edit_cms_page.publish_at'))->required()->minDate(now()),
+                    Textarea::make('summary')->label(__('filagora-cms::ui.edit_cms_page.version_summary'))->rows(2)->maxLength(255),
                 ])
                 ->action(function (array $data): void {
                     app(PageDrafts::class)->schedule($this->page(), Carbon::parse($data['publish_at']), auth()->user(), $data['summary'] ?? null);
                     $this->refreshWorkflowState();
-                    Notification::make()->success()->title('Publish scheduled')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_page.publish_scheduled'))->send();
                 }),
             Action::make('cancel_schedule')
-                ->label('Cancel schedule')
+                ->label(__('filagora-cms::ui.edit_cms_page.cancel_schedule'))
                 ->color('gray')
                 ->requiresConfirmation()
                 ->visible(fn (): bool => $this->page()->draft()->whereNotNull('scheduled_publish_at')->exists())
@@ -167,24 +167,24 @@ class EditCmsPage extends EditRecord
                     $this->refreshWorkflowState();
                 }),
             Action::make('discard_draft')
-                ->label('Discard draft')
+                ->label(__('filagora-cms::ui.edit_cms_page.discard_draft'))
                 ->icon('heroicon-o-arrow-uturn-left')
                 ->color('danger')
                 ->requiresConfirmation()
-                ->modalDescription('Throws away all unpublished changes to this page and its blocks.')
+                ->modalDescription(__('filagora-cms::ui.edit_cms_page.throws_away_all_unpublished_changes_to'))
                 ->visible(fn (): bool => (bool) $this->page()->draft()->first()?->is_dirty)
                 ->action(function (): void {
                     app(PageDrafts::class)->discard($this->page());
                     $this->refreshWorkflowState();
                     $this->fillForm();
-                    Notification::make()->success()->title('Draft discarded')->send();
+                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_page.draft_discarded'))->send();
                 }),
             Action::make('unpublish')
-                ->label('Unpublish')
+                ->label(__('filagora-cms::ui.edit_cms_page.unpublish'))
                 ->icon('heroicon-o-eye-slash')
                 ->color('warning')
                 ->requiresConfirmation()
-                ->modalDescription('Immediately takes the page offline. Content and versions are kept.')
+                ->modalDescription(__('filagora-cms::ui.edit_cms_page.immediately_takes_the_page_offline_content'))
                 ->visible(fn (): bool => $this->page()->status === CmsPageStatus::PUBLISHED)
                 ->action(function (): void {
                     $this->page()->update(['status' => CmsPageStatus::DRAFT]);

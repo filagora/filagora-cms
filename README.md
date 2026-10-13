@@ -126,7 +126,19 @@ Nothing planned for this package beyond release.
 
 ## Install
 
-Not yet released.
+```bash
+composer require filagora/filagora-cms
+php artisan migrate
+php artisan filagora:entitlements:sync
+```
+
+```php
+->plugin(\Filagora\Cms\FilagoraCmsPlugin::make())
+```
+
+Schedule `filagora:cms:publish-due` every minute to publish scheduled pages, menus and blocks.
+Implement `PageUrlResolver` if your pages are not served at `/pages/{slug}`. Publish the config
+with `--tag=filagora-cms-config` and the editor text with `--tag=filagora-cms-lang`.
 
 ## Testing
 

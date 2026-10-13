@@ -5,6 +5,12 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-13
+
+First release under the `filagora/filagora-cms` name (the unreleased `zcwilt/forumkit-cms` was never published).
+
+- All editor text now lives in `resources/lang/en/ui.php` (publish the lang files to translate it); a test checks every referenced key exists.
+
 - Typed block forms: a field DSL (`Filagora\Cms\BlockTypes\Fields\Field`) on `BlockType`, forms for all 19 generic types, JSON editor kept as the fallback for field-less or unregistered types.
 - Reusable blocks screen (`CmsBlockResource`) working on the staged copy, with publish, discard, delete and versions.
 

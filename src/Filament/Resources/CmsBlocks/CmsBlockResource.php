@@ -40,7 +40,7 @@ class CmsBlockResource extends Resource
 
     public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return app(NavigationGroupRegistry::class)->label('cms');
+        return app(NavigationGroupRegistry::class)->label(__('filagora-cms::ui.cms_block_resource.cms'));
     }
 
     public static function getNavigationLabel(): string

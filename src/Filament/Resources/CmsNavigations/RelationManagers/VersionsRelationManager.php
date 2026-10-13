@@ -38,40 +38,40 @@ class VersionsRelationManager extends RelationManager
             ->recordTitleAttribute('version_number')
             ->defaultSort('version_number', 'desc')
             ->columns([
-                TextColumn::make('version_number')->label('Version')->sortable(),
-                TextColumn::make('change_summary')->label('Summary')->wrap()->placeholder('No summary')->searchable(),
-                TextColumn::make('createdBy.'.UserModel::titleAttribute())->label('Created by')->placeholder('System'),
-                TextColumn::make('created_at')->label('Created')->dateTime()->sortable(),
+                TextColumn::make('version_number')->label(__('filagora-cms::ui.versions_relation_manager.version'))->sortable(),
+                TextColumn::make('change_summary')->label(__('filagora-cms::ui.versions_relation_manager.summary'))->wrap()->placeholder(__('filagora-cms::ui.versions_relation_manager.no_summary'))->searchable(),
+                TextColumn::make('createdBy.'.UserModel::titleAttribute())->label(__('filagora-cms::ui.versions_relation_manager.created_by'))->placeholder(__('filagora-cms::ui.versions_relation_manager.system')),
+                TextColumn::make('created_at')->label(__('filagora-cms::ui.versions_relation_manager.created'))->dateTime()->sortable(),
             ])
             ->recordActions([
                 Action::make('view_snapshot')
-                    ->label('View snapshot')
+                    ->label(__('filagora-cms::ui.versions_relation_manager.view_snapshot'))
                     ->icon('heroicon-o-document-text')
                     ->color('gray')
                     ->modalHeading(fn (CmsNavigationVersion $record): string => 'Version '.$record->version_number.' snapshot')
                     ->modalSubmitAction(false)
                     ->modalContent(fn (CmsNavigationVersion $record): View => view('filagora-cms::filament.version-snapshot', ['version' => $record])),
                 Action::make('restore_version')
-                    ->label('Restore to draft')
+                    ->label(__('filagora-cms::ui.versions_relation_manager.restore_to_draft'))
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
                     ->requiresConfirmation()
                     ->modalHeading(fn (CmsNavigationVersion $record): string => 'Restore version '.$record->version_number)
-                    ->modalDescription('Loads this version into the draft (its links). Nothing goes live until you publish.')
+                    ->modalDescription(__('filagora-cms::ui.versions_relation_manager.loads_this_version_into_the_draft_2'))
                     ->action(function (CmsNavigationVersion $record): void {
                         $menu = $this->getOwnerRecord();
                         assert($menu instanceof CmsNavigation);
                         app(NavigationDrafts::class)->restoreVersionToDraft($menu, $record, auth()->user());
-                        Notification::make()->success()->title('Version loaded into draft')->body('Version '.$record->version_number.' is now your draft. Review it, then publish.')->send();
+                        Notification::make()->success()->title(__('filagora-cms::ui.versions_relation_manager.version_loaded_into_draft'))->body(__('filagora-cms::ui.common.version_is_draft', ['number' => $record->version_number]))->send();
                         $this->redirect(CmsNavigationResource::getUrl('edit', ['record' => $menu]));
                     }),
                 DeleteAction::make()
                     ->modalHeading(fn (CmsNavigationVersion $record): string => 'Delete version '.$record->version_number)
-                    ->modalDescription('This permanently removes this version snapshot. The live menu is not changed.'),
+                    ->modalDescription(__('filagora-cms::ui.versions_relation_manager.this_permanently_removes_this_version_snapshot_2')),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->modalDescription('This permanently removes the selected version snapshots. The live menu is not changed.'),
+                    DeleteBulkAction::make()->modalDescription(__('filagora-cms::ui.versions_relation_manager.this_permanently_removes_the_selected_version_2')),
                 ]),
             ]);
     }

@@ -19,21 +19,21 @@ class CmsNavigationForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Menu')
-                ->description('One record per menu location. Add links in the order they should appear.')
+            Section::make(__('filagora-cms::ui.cms_navigation_form.menu'))
+                ->description(__('filagora-cms::ui.cms_navigation_form.one_record_per_menu_location_add'))
                 ->schema([
                     TextInput::make('name')
-                        ->label('Menu key')
+                        ->label(__('filagora-cms::ui.cms_navigation_form.menu_key'))
                         ->required()
                         ->maxLength(255)
                         ->unique(ignoreRecord: true)
-                        ->helperText('The name your site looks the menu up by, for example header or footer.'),
+                        ->helperText(__('filagora-cms::ui.cms_navigation_form.the_name_your_site_looks_the')),
                 ]),
-            Section::make('Links')
-                ->description('Use child links to build a dropdown; a dropdown link can in turn hold its own links as a group (two levels below a top-level link). Footer menus should usually stay flat.')
+            Section::make(__('filagora-cms::ui.cms_navigation_form.links'))
+                ->description(__('filagora-cms::ui.cms_navigation_form.use_child_links_to_build_a'))
                 ->schema([
                     Repeater::make('items')
-                        ->label('Links')
+                        ->label(__('filagora-cms::ui.cms_navigation_form.links'))
                         ->schema(self::itemSchema())
                         ->defaultItems(0)
                         ->addActionLabel('Add link')
@@ -55,38 +55,38 @@ class CmsNavigationForm
         $kinds = fn (): NavigationLinkTypes => app(NavigationLinkTypes::class);
 
         $schema = [
-            TextInput::make('label')->label('Link label')->placeholder('About us')->required(),
+            TextInput::make('label')->label(__('filagora-cms::ui.cms_navigation_form.link_label'))->placeholder(__('filagora-cms::ui.cms_navigation_form.about_us'))->required(),
             Select::make('type')
-                ->label('Link type')
+                ->label(__('filagora-cms::ui.cms_navigation_form.link_type'))
                 ->options(fn (): array => $kinds()->options())
                 ->default('url')
                 ->live()
                 ->required(),
             TextInput::make('url')
-                ->label('URL')
+                ->label(__('filagora-cms::ui.cms_navigation_form.url'))
                 ->required(fn (Get $get): bool => $get('type') === 'url')
                 ->visible(fn (Get $get): bool => $get('type') === 'url')
-                ->placeholder('/forums or https://example.com')
-                ->helperText('Relative URLs stay on-site; full URLs can link externally. For a heading that only groups links, use #.'),
+                ->placeholder(__('filagora-cms::ui.cms_navigation_form.forums_or_httpsexamplecom'))
+                ->helperText(__('filagora-cms::ui.cms_navigation_form.relative_urls_stay_onsite_full_urls')),
             Select::make('reference')
-                ->label('Reference')
+                ->label(__('filagora-cms::ui.cms_navigation_form.reference'))
                 ->options(fn (Get $get): array => $kinds()->references((string) $get('type')))
                 ->required(fn (Get $get): bool => $get('type') !== 'url')
                 ->visible(fn (Get $get): bool => $get('type') !== 'url' && $kinds()->has((string) $get('type')))
-                ->helperText('Resolved by the application from a fixed list, at render time.'),
+                ->helperText(__('filagora-cms::ui.cms_navigation_form.resolved_by_the_application_from_a')),
             Select::make('target')
-                ->label('Target')
+                ->label(__('filagora-cms::ui.cms_navigation_form.target'))
                 ->options(['_self' => '_self', '_blank' => '_blank', '_parent' => '_parent', '_top' => '_top'])
                 ->default('_self')
                 ->visible(fn (Get $get): bool => $get('type') === 'url')
-                ->helperText('Open in a new tab only when that improves the experience, usually for external links.'),
+                ->helperText(__('filagora-cms::ui.cms_navigation_form.open_in_a_new_tab_only')),
             Select::make('entitlements')
-                ->label('Visible for entitlements')
+                ->label(__('filagora-cms::ui.cms_navigation_form.visible_for_entitlements'))
                 ->multiple()
                 ->searchable()
                 ->preload()
                 ->options(fn (): array => EntitlementDefinition::selectorOptions())
-                ->helperText('Leave empty to show this link to everyone. When set, it is shown to anyone holding any selected entitlement.')
+                ->helperText(__('filagora-cms::ui.cms_navigation_form.leave_empty_to_show_this_link'))
                 ->columnSpanFull(),
         ];
 
