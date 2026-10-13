@@ -8,9 +8,9 @@ use ForumKit\Cms\Models\CmsMediaAsset;
 use ForumKit\Cms\Models\CmsNavigation;
 use ForumKit\Cms\Models\CmsPage;
 use ForumKit\Cms\Models\CmsTag;
+use ForumKit\Cms\Preview\PreviewSession;
 use ForumKit\Cms\Services\CmsContent;
 use ForumKit\Cms\Services\MediaAssetUsage;
-use ForumKit\Cms\Support\NoPreview;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -27,8 +27,8 @@ function livePage(array $attributes = []): CmsPage
     return CmsPage::create(array_merge(['slug' => 'p-'.uniqid(), 'title' => 'T', 'status' => 'published', 'published_at' => now()->subMinute()], $attributes))->refresh();
 }
 
-it('binds the do-nothing preview by default', function () {
-    expect(app(PreviewResolver::class))->toBeInstanceOf(NoPreview::class);
+it('binds the preview session as the resolver by default', function () {
+    expect(app(PreviewResolver::class))->toBeInstanceOf(PreviewSession::class)->and(app(PreviewResolver::class)->pageForSlug('x'))->toBeNull()->and(app(PreviewResolver::class)->draftItemsFor('Main'))->toBeNull();
 });
 
 // ------------------------------------------------------------------ pages
