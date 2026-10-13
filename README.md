@@ -94,9 +94,28 @@ These services do not check who may call them; the Filament screens do.
 - **Two abilities**, `forumkit.cms.manage` and `forumkit.cms.preview`, mapped to entitlements in
   `forumkit-cms.gates`.
 
+- **Filament screens** (`ForumKitCmsPlugin`, in a "Content" navigation group; every screen needs
+  `forumkit.cms.manage`):
+  - *Pages*: list with a state badge and filter; create; an editor that works on the draft
+    ("Save draft"), with header actions for variants (switch, new, rename, delete), a shared
+    preview link, preview, publish (with a version summary and a stale-draft warning), schedule,
+    cancel schedule, discard draft and unpublish; a pending-changes panel from the diff; a
+    staged-blocks table (add, edit, delete, with change badges); and a versions list (view the
+    snapshot, restore to draft, delete). A block's content is edited as JSON; a type nobody
+    registered shows as "Unknown type" and can still be edited.
+  - *Menus*: the same workflow, with a nested link editor (three levels) whose link kinds come
+    from `NavigationLinkTypes`.
+  - *Tags*, *Media* (single and bulk upload into `cms-media`, details read from the file, usage
+    count, delete with a warning when a block still uses it) and *Preview links* (status, opens,
+    show link, revoke).
+  - The page URL the editor's Preview sends you to comes from the `PageUrlResolver` contract
+    (default: the custom route or `/pages/{slug}`); the address of a shared link from the route
+    named in `forumkit-cms.preview.share_route`. Both are yours to provide.
+  - Block forms per type, and reusable blocks, are the next step.
+
 ## Still to come
 
-The Filament screens (including each block type's form).
+Reusable blocks as a screen, and a form for each generic block type.
 
 ## Install
 
