@@ -76,11 +76,13 @@ return [
     |--------------------------------------------------------------------------
     |
     | `uncacheable_middleware`: add the middleware that marks every response uncacheable and
-    | noindex while a preview is in effect to the `web` group.
+    | noindex while a preview is in effect to the `web` group. `share_route`: the name of the
+    | route you define to open a shared preview link (it takes a `token`).
     |
     */
     'preview' => [
         'uncacheable_middleware' => true,
+        'share_route' => 'cms.preview.share.open',
     ],
 
 ];

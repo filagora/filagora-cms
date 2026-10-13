@@ -13,6 +13,7 @@ use ForumKit\Cms\Services\NavigationDrafts;
 use ForumKit\Cms\Services\PageDrafts;
 use ForumKit\Cms\Support\Abilities;
 use ForumKit\Cms\Support\Models;
+use Illuminate\Contracts\Session\Session as SessionContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 
@@ -43,14 +44,14 @@ class PreviewSession implements PreviewResolver
     {
         $stored = $this->stored();
         $stored['navigations'][(string) $navigation->name] = true;
-        request()->session()->put(self::SESSION_KEY, $stored);
+        $this->session()?->put(self::SESSION_KEY, $stored);
     }
 
     public function addPage(CmsPage $page): void
     {
         $stored = $this->stored();
         $stored['pages'][(int) $page->id] = true;
-        request()->session()->put(self::SESSION_KEY, $stored);
+        $this->session()?->put(self::SESSION_KEY, $stored);
     }
 
     /**
@@ -66,9 +67,7 @@ class PreviewSession implements PreviewResolver
             unset($stored['pages'][(int) $key]);
         }
 
-        if (request()->hasSession()) {
-            request()->session()->put(self::SESSION_KEY, $stored);
-        }
+        $this->session()?->put(self::SESSION_KEY, $stored);
     }
 
     /**
@@ -76,9 +75,7 @@ class PreviewSession implements PreviewResolver
      */
     public function clear(): void
     {
-        if (request()->hasSession()) {
-            request()->session()->forget([self::SESSION_KEY, self::SHARE_SESSION_KEY]);
-        }
+        $this->session()?->forget([self::SESSION_KEY, self::SHARE_SESSION_KEY]);
     }
 
     /**
@@ -86,7 +83,7 @@ class PreviewSession implements PreviewResolver
      */
     public function startShare(CmsPreviewShare $share): void
     {
-        request()->session()->put(self::SHARE_SESSION_KEY, $share->id);
+        $this->session()?->put(self::SHARE_SESSION_KEY, $share->id);
     }
 
     /**
@@ -294,11 +291,13 @@ class PreviewSession implements PreviewResolver
 
     private function share(): ?CmsPreviewShare
     {
-        if (! app()->bound('request') || ! request()->hasSession()) {
+        $session = $this->session();
+
+        if ($session === null) {
             return null;
         }
 
-        $id = request()->session()->get(self::SHARE_SESSION_KEY);
+        $id = $session->get(self::SHARE_SESSION_KEY);
 
         if (! is_int($id)) {
             return null;
@@ -324,11 +323,13 @@ class PreviewSession implements PreviewResolver
     {
         $empty = ['navigations' => [], 'pages' => []];
 
-        if (! app()->bound('request') || ! request()->hasSession()) {
+        $session = $this->session();
+
+        if ($session === null) {
             return $empty;
         }
 
-        $stored = request()->session()->get(self::SESSION_KEY, []);
+        $stored = $session->get(self::SESSION_KEY, []);
 
         if (! is_array($stored)) {
             return $empty;
@@ -338,6 +339,19 @@ class PreviewSession implements PreviewResolver
             'navigations' => is_array($stored['navigations'] ?? null) ? $stored['navigations'] : [],
             'pages' => is_array($stored['pages'] ?? null) ? $stored['pages'] : [],
         ];
+    }
+
+    /**
+     * The request's session when it has one (a web request), otherwise the application's session
+     * store, which is what a Livewire call from a panel writes to. Null when neither exists.
+     */
+    private function session(): ?SessionContract
+    {
+        if (app()->bound('request') && request()->hasSession()) {
+            return request()->session();
+        }
+
+        return app()->bound('session.store') ? app('session.store') : null;
     }
 
     private function canPreview(): bool

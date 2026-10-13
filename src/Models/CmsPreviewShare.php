@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Route;
 
 /**
  * A link that shows chosen draft menus and pages to someone without a login.
@@ -62,6 +63,17 @@ class CmsPreviewShare extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(UserModel::class(), 'created_by_id');
+    }
+
+    /**
+     * The address that opens this link, if the host has defined the route named in
+     * `forumkit-cms.preview.share_route` (it takes the token).
+     */
+    public function url(): ?string
+    {
+        $route = (string) config('forumkit-cms.preview.share_route', 'cms.preview.share.open');
+
+        return Route::has($route) ? route($route, ['token' => $this->getRawOriginal('token')]) : null;
     }
 
     /**

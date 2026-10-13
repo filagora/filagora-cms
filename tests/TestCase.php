@@ -16,6 +16,7 @@ use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use ForumKit\Cms\CmsServiceProvider;
+use ForumKit\Cms\Tests\Support\TestPanelProvider;
 use ForumKit\Cms\Tests\Support\TestSupportServiceProvider;
 use ForumKit\Cms\Tests\Support\TestUser;
 use ForumKit\Core\CoreServiceProvider;
@@ -44,6 +45,7 @@ abstract class TestCase extends Orchestra
             EntitlementsServiceProvider::class,
             CmsServiceProvider::class,
             TestSupportServiceProvider::class,
+            TestPanelProvider::class,
         ];
     }
 

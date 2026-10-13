@@ -7,8 +7,10 @@ namespace ForumKit\Cms;
 use ForumKit\Cms\BlockTypes\BlockTypeRegistry;
 use ForumKit\Cms\BlockTypes\GenericBlockTypes;
 use ForumKit\Cms\Console\PublishDueCommand;
+use ForumKit\Cms\Contracts\PageUrlResolver;
 use ForumKit\Cms\Contracts\PreviewResolver;
 use ForumKit\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
+use ForumKit\Cms\Media\MediaAssets;
 use ForumKit\Cms\Navigation\NavigationItems;
 use ForumKit\Cms\Navigation\NavigationLinkTypes;
 use ForumKit\Cms\Preview\PreviewSession;
@@ -21,8 +23,12 @@ use ForumKit\Cms\Services\NavigationDrafts;
 use ForumKit\Cms\Services\PageDraftDiff;
 use ForumKit\Cms\Services\PageDrafts;
 use ForumKit\Cms\Services\PageVersioning;
+use ForumKit\Cms\Support\DefaultPageUrl;
+use ForumKit\Cms\Support\WorkflowLabels;
 use ForumKit\Core\Modules\Module;
 use ForumKit\Core\Modules\ModuleRegistry;
+use ForumKit\Core\Navigation\NavigationGroupDefinition;
+use ForumKit\Core\Navigation\NavigationGroupRegistry;
 use ForumKit\Core\Schema\PackageSchema;
 use ForumKit\Core\Schema\SchemaRegistry;
 use ForumKit\Entitlements\Registry\Definition;
@@ -42,6 +48,9 @@ class CmsServiceProvider extends ServiceProvider
         $this->app->scoped(PreviewSession::class);
         $this->app->bindIf(PreviewResolver::class, PreviewSession::class);
         $this->app->singleton(PreviewShares::class);
+        $this->app->bindIf(PageUrlResolver::class, DefaultPageUrl::class);
+        $this->app->singleton(WorkflowLabels::class);
+        $this->app->singleton(MediaAssets::class);
         $this->app->singleton(BlockTypeRegistry::class, function (): BlockTypeRegistry {
             $registry = new BlockTypeRegistry;
 
@@ -73,6 +82,7 @@ class CmsServiceProvider extends ServiceProvider
             PackageSchema::fromFile('cms', __DIR__.'/../database/schema.php', __DIR__.'/../database/migrations'),
         );
 
+        $this->registerNavigationGroup();
         $this->declareEntitlements();
         $this->defineGates();
         $this->registerPreviewMiddleware();
@@ -120,5 +130,15 @@ class CmsServiceProvider extends ServiceProvider
         if (config('forumkit-cms.preview.uncacheable_middleware', true)) {
             $this->app->make(Router::class)->pushMiddlewareToGroup('web', MarkPreviewResponsesUncacheable::class);
         }
+    }
+
+    private function registerNavigationGroup(): void
+    {
+        $this->app->make(NavigationGroupRegistry::class)->register(new NavigationGroupDefinition(
+            key: 'cms',
+            label: fn (): string => __('forumkit-cms::messages.navigation_groups.cms'),
+            icon: 'heroicon-o-document-duplicate',
+            sort: 40,
+        ));
     }
 }
