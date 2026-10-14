@@ -166,3 +166,21 @@ it('shows a field only when its siblings match', function () {
         ->and(Field::strings('s', 'S')->showWhen(['a' => 'b'])->visibleWhen)->toBe(['a' => 'b'])
         ->and(Field::media('M')->showWhen(['a' => 'b'])->visibleWhen)->toBe(['a' => 'b']);
 });
+
+it('supplies wording for a field a block was saved without, and keeps a saved blank blank', function () {
+    $field = Field::text('heading', 'Heading')->withFallback(fn (array $data): string => ($data['kind'] ?? 'a') === 'b' ? 'B heading' : 'A heading');
+
+    expect($field->hydrate(['kind' => 'b']))->toBe(['heading' => 'B heading'])
+        ->and($field->hydrate(['heading' => 'Mine']))->toBe(['heading' => 'Mine'])
+        ->and($field->hydrate(['heading' => '']))->toBe(['heading' => ''])
+        ->and($field->normalize(['heading' => '  ']))->toBe(['heading' => '']);
+});
+
+it('can save the fallback in place of a blank value, and carries it through showWhen', function () {
+    $field = Field::text('name', 'Name')->withFallback(fn (array $data): string => 'Default name', whenBlank: true)->showWhen(['kind' => 'b']);
+
+    expect($field->normalize(['name' => ' ']))->toBe(['name' => 'Default name'])
+        ->and($field->normalize(['name' => ' Kept ']))->toBe(['name' => 'Kept'])
+        ->and($field->hydrate([]))->toBe(['name' => 'Default name'])
+        ->and($field->visibleWhen)->toBe(['kind' => 'b']);
+});
