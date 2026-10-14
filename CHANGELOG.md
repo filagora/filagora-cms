@@ -8,6 +8,7 @@ All notable changes to this package are documented here. The format follows
 ## [0.2.1] - 2026-10-14
 
 - `ScalarField::withFallback()` (also on `Field::text()` and the other text factories): wording a block saved before a field existed shows in the form, and optionally replaces a blank value on save. For site block types whose older rows lack newer text keys.
+- `ScalarField::asInteger()`: a select whose choice is saved as a whole number (column counts).
 
 ## [0.2.0] - 2026-10-13
 

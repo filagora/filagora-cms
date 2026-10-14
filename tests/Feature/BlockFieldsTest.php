@@ -184,3 +184,12 @@ it('can save the fallback in place of a blank value, and carries it through show
         ->and($field->hydrate([]))->toBe(['name' => 'Default name'])
         ->and($field->visibleWhen)->toBe(['kind' => 'b']);
 });
+
+it('saves an integer choice as a number, falling back to the default for anything not on offer', function () {
+    $field = Field::select('columns', 'Columns', ['2' => 'Two', '3' => 'Three'], '2')->asInteger();
+
+    expect($field->normalize(['columns' => '3']))->toBe(['columns' => 3])
+        ->and($field->normalize(['columns' => '9']))->toBe(['columns' => 2])
+        ->and($field->normalize([]))->toBe(['columns' => 2])
+        ->and($field->hydrate(['columns' => 3]))->toBe(['columns' => '3']);
+});

@@ -29,13 +29,14 @@ final class ScalarField extends Field
         public readonly int $rows = 3,
         public readonly ?Closure $fallback = null,
         public readonly bool $blankFallsBack = false,
+        public readonly bool $integer = false,
     ) {
         parent::__construct($key, $label, $help, $visibleWhen);
     }
 
     public function showWhen(array $conditions): static
     {
-        return new self($this->key, $this->label, $this->kind, $this->options, $this->default, $this->help, $conditions, $this->rows, $this->fallback, $this->blankFallsBack);
+        return new self($this->key, $this->label, $this->kind, $this->options, $this->default, $this->help, $conditions, $this->rows, $this->fallback, $this->blankFallsBack, $this->integer);
     }
 
     /**
@@ -46,7 +47,15 @@ final class ScalarField extends Field
      */
     public function withFallback(Closure $fallback, bool $whenBlank = false): static
     {
-        return new self($this->key, $this->label, $this->kind, $this->options, $this->default, $this->help, $this->visibleWhen, $this->rows, $fallback, $whenBlank);
+        return new self($this->key, $this->label, $this->kind, $this->options, $this->default, $this->help, $this->visibleWhen, $this->rows, $fallback, $whenBlank, $this->integer);
+    }
+
+    /**
+     * A copy whose choice is saved as a whole number, for lists of numbers such as column counts.
+     */
+    public function asInteger(): static
+    {
+        return new self($this->key, $this->label, $this->kind, $this->options, $this->default, $this->help, $this->visibleWhen, $this->rows, $this->fallback, $this->blankFallsBack, true);
     }
 
     public function normalize(array $input): array
@@ -56,7 +65,9 @@ final class ScalarField extends Field
         return [$this->key => match ($this->kind) {
             ScalarKind::Toggle => (bool) $value,
             ScalarKind::Number => is_numeric($value) && (int) $value > 0 ? (int) $value : null,
-            ScalarKind::Select => ($text = trim((string) $value)) !== '' ? $text : (string) $this->default,
+            ScalarKind::Select => $this->integer
+                ? (int) (($text = trim((string) $value)) !== '' && isset($this->options[$text]) ? $text : $this->default)
+                : (($text = trim((string) $value)) !== '' ? $text : (string) $this->default),
             default => $this->blankFallsBack && ($text = trim((string) $value)) === '' ? ($this->fallback)($input) : trim((string) $value),
         }];
     }
