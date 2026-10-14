@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Filagora\Cms\Navigation;
 
-use Filagora\Entitlements\Services\AuthorizationService;
+use Filagora\Core\Contracts\AccessChecker;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -18,7 +18,7 @@ final class NavigationItems
 
     public function __construct(
         private readonly NavigationLinkTypes $linkTypes,
-        private readonly AuthorizationService $authorization,
+        private readonly AccessChecker $access,
     ) {}
 
     /**
@@ -137,7 +137,7 @@ final class NavigationItems
 
         $user = auth()->user();
 
-        return $user !== null && $this->authorization->allowsAny($user, $entitlements);
+        return $user !== null && $this->access->allowsAny($user, $entitlements);
     }
 
     /**

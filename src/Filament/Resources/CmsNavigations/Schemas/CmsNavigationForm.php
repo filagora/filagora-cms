@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Filagora\Cms\Filament\Resources\CmsNavigations\Schemas;
 
 use Filagora\Cms\Navigation\NavigationLinkTypes;
-use Filagora\Entitlements\Models\EntitlementDefinition;
+use Filagora\Cms\Support\KeyField;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -80,12 +80,8 @@ class CmsNavigationForm
                 ->default('_self')
                 ->visible(fn (Get $get): bool => $get('type') === 'url')
                 ->helperText(__('filagora-cms::ui.cms_navigation_form.open_in_a_new_tab_only')),
-            Select::make('entitlements')
+            KeyField::multiple('entitlements')
                 ->label(__('filagora-cms::ui.cms_navigation_form.visible_for_entitlements'))
-                ->multiple()
-                ->searchable()
-                ->preload()
-                ->options(fn (): array => EntitlementDefinition::selectorOptions())
                 ->helperText(__('filagora-cms::ui.cms_navigation_form.leave_empty_to_show_this_link'))
                 ->columnSpanFull(),
         ];

@@ -5,6 +5,10 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **`filagora-entitlements` is now optional.** The staff abilities, and which menu items a visitor sees, go through core's `AccessChecker`; entitlements answers it when installed, a host can bind its own. Gates come from core's `GateAbilities`, the screens use core's `GatedByAbility`, the module now requires only `core`, and `filagora-entitlements` moves from `require` to `suggest`. Without it the menu editor's "visible for" field is a free-text list of keys instead of an entitlement picker. Behaviour with entitlements installed is unchanged. Requires `filagora/filagora-core` `^0.2.1`.
+
 ## [0.2.1] - 2026-10-14
 
 - `ScalarField::withFallback()` (also on `Field::text()` and the other text factories): wording a block saved before a field existed shows in the form, and optionally replaces a blank value on save. For site block types whose older rows lack newer text keys.
