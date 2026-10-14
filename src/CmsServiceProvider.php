@@ -31,12 +31,10 @@ use Filagora\Core\Navigation\NavigationGroupDefinition;
 use Filagora\Core\Navigation\NavigationGroupRegistry;
 use Filagora\Core\Schema\PackageSchema;
 use Filagora\Core\Schema\SchemaRegistry;
+use Filagora\Core\Support\GateAbilities;
 use Filagora\Entitlements\Registry\Definition;
 use Filagora\Entitlements\Registry\EntitlementRegistry;
-use Filagora\Entitlements\Services\AuthorizationService;
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class CmsServiceProvider extends ServiceProvider
@@ -75,7 +73,7 @@ class CmsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->app->make(ModuleRegistry::class)->register(
-            new Module('cms', 'Filagora CMS', 'filagora/filagora-cms', requires: ['core', 'entitlements']),
+            new Module('cms', 'Filagora CMS', 'filagora/filagora-cms', requires: ['core']),
         );
 
         $this->app->make(SchemaRegistry::class)->register(
@@ -104,26 +102,27 @@ class CmsServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     * With `filagora-entitlements` installed, the keys the abilities map to are declared so
+     * `filagora:entitlements:sync` creates their definitions. Without it there is nothing to
+     * declare them to.
+     */
     private function declareEntitlements(): void
     {
+        if (! class_exists(EntitlementRegistry::class) || ! $this->app->bound(EntitlementRegistry::class)) {
+            return;
+        }
+
         $registry = $this->app->make(EntitlementRegistry::class);
 
-        foreach (config('filagora-cms.gates', []) as $entitlement) {
-            if (is_string($entitlement) && $entitlement !== '') {
-                $registry->define(new Definition($entitlement, wildcardChildren: false));
-            }
+        foreach (GateAbilities::keys('filagora-cms.gates') as $entitlement) {
+            $registry->define(new Definition($entitlement, wildcardChildren: false));
         }
     }
 
     private function defineGates(): void
     {
-        foreach (config('filagora-cms.gates', []) as $ability => $entitlement) {
-            if (! is_string($ability) || ! is_string($entitlement)) {
-                continue;
-            }
-
-            Gate::define($ability, fn (?Authenticatable $user): bool => $this->app->make(AuthorizationService::class)->allows($user, $entitlement));
-        }
+        GateAbilities::define('filagora-cms.gates');
     }
 
     /**

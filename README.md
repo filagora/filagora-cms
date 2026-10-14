@@ -2,15 +2,16 @@
 
 Pages, content blocks, menus, tags and media for Filagora, with a staged-edit workflow (drafts,
 named variants, versions, scheduled publishing and previews), as a Laravel 13 / Filament 5 plugin.
-Requires [`filagora/filagora-core`](https://github.com/filagora/filagora-core) and
-[`filagora/filagora-entitlements`](https://github.com/filagora/filagora-entitlements).
+Requires [`filagora/filagora-core`](https://github.com/filagora/filagora-core). Who may use the
+editor, and which menu items a visitor sees, is answered by core's `AccessChecker`: install
+[`filagora/filagora-entitlements`](https://github.com/filagora/filagora-entitlements) and it is
+answered from entitlement grants, or bind your own checker (roles, policies, a permissions
+package). With neither, the editor denies everyone.
 
-> **In development: not released and not on Packagist yet.** Only the data layer exists so far
-> (tables and models); the services, the draft and preview workflow and the Filament screens are
-> still to come. There is no frontend: the finished package will be models, services, events and
-> staff screens, and you render the pages.
+> The package is at `0.2`: the API may change between `0.x` minor versions. There is no frontend:
+> it is models, services, events and staff screens, and you render the pages.
 
-## What exists so far
+## What it does
 
 - **Fourteen tables**, prefixed `filagora_` by default, matching an existing site's tables index
   for index so `php artisan filagora:adopt` can accept them: `cms_pages`, `cms_blocks`,
@@ -129,7 +130,7 @@ Nothing planned for this package beyond release.
 ```bash
 composer require filagora/filagora-cms
 php artisan migrate
-php artisan filagora:entitlements:sync
+php artisan filagora:entitlements:sync   # only with entitlements installed
 ```
 
 ```php

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Filagora\Cms\Filament\Concerns;
 
 use Filagora\Cms\Support\Abilities;
-use Filagora\Entitlements\Filament\Concerns\GatedByAbility;
+use Filagora\Core\Filament\Concerns\GatedByAbility;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
