@@ -5,6 +5,10 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- **Search** with `filagora/filagora-search` (suggested, not required): `CmsPageSearchIndex` (published pages with title, excerpt, SEO fields, slug and live block text, capped by `search.content_limit`; the publication time is a field so a scheduled page is left out until due), `CmsSearch::pages()` (live pages only, hits re-checked against the row), `CmsPageDatabaseSearch` (the same query from the tables, newest first) and `BlockText`. A saved or deleted live block keeps its page's document current.
+
 ## [0.2.2] - 2026-10-14
 
 ### Changed

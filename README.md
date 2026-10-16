@@ -92,6 +92,13 @@ These services do not check who may call them; the Filament screens do.
     `noindex, nofollow` while a preview is in effect. It is added to the `web` group unless you
     set `filagora-cms.preview.uncacheable_middleware` to false.
   - The routes, the controllers and the banner are yours: this package has no frontend.
+- **Search** (with [`filagora/filagora-search`](https://github.com/filagora/filagora-search)
+  installed). Published pages become a search index (title, excerpt, SEO fields, slug and the text
+  of their live, published blocks, with tags removed and links left out).
+  `CmsSearch::pages($text, $page)` returns the pages that are live now, from
+  whichever engine the search package is set to (Meilisearch, or the database), and drops any
+  hit whose row is no longer live because an index can be stale. Saving or deleting a live block
+  keeps its page's document right. The search page is yours.
 - **Two abilities**, `filagora.cms.manage` and `filagora.cms.preview`, mapped to entitlements in
   `filagora-cms.gates`.
 
