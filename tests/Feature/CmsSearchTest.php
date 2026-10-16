@@ -218,3 +218,11 @@ it('includes a page published exactly at a range bound, and starts at page one',
     expect($hits->ids())->toBe([$page->id])
         ->and(foundPages('bound', 0))->toBe([$page->id]);
 });
+
+it('matches block text without regard to case', function (string $engine) {
+    cmsSearchOn($engine);
+    $page = searchablePage('Case page', blocks: [['cta_label' => 'Browse The Forum']]);
+
+    expect(foundPages('browse'))->toBe([$page->id])
+        ->and(foundPages('THE FORUM'))->toBe([$page->id]);
+})->with('cmsEngines');

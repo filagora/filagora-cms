@@ -21,7 +21,8 @@ use InvalidArgumentException;
 
 /**
  * Answers a page search from the tables: every word must appear in the title, excerpt, SEO
- * fields, slug or the data of a live published block. Newest publication first.
+ * fields, slug or the data of a live published block (compared without regard to case: MariaDB
+ * keeps JSON columns in a case-sensitive collation). Newest publication first.
  */
 class CmsPageDatabaseSearch
 {
@@ -41,7 +42,10 @@ class CmsPageDatabaseSearch
                 ->orWhere('seo_title', 'like', $like)
                 ->orWhere('seo_description', 'like', $like)
                 ->orWhere('slug', 'like', $like)
-                ->orWhereHas('blocks', fn (Builder $block) => $block->where('is_published', true)->where('data', 'like', $like)));
+                ->orWhereHas('blocks', fn (Builder $block) => $block->where('is_published', true)->whereRaw(
+                    'LOWER('.$block->getQuery()->getGrammar()->wrap($block->getModel()->qualifyColumn('data')).') like ?',
+                    [mb_strtolower($like)],
+                )));
         }
 
         $total = (clone $builder)->count();
