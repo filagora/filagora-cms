@@ -62,10 +62,11 @@ it('finds a published page by title, excerpt, SEO text, slug or block text', fun
     $byExcerpt = searchablePage('Other', ['excerpt' => 'All about shipping rates']);
     $bySeo = searchablePage('Third', ['seo_description' => 'Cheap shipping tips']);
     $bySlug = searchablePage('Fourth', ['slug' => 'shipping-faq']);
+    $bySeoTitle = searchablePage('Sixth', ['seo_title' => 'Shipping zones']);
     $byBlock = searchablePage('Fifth', blocks: [['heading' => 'Rates', 'body' => '<p>We offer <b>shipping</b> worldwide</p>']]);
     searchablePage('Unrelated', blocks: [['body' => 'Nothing here']]);
 
-    expect(foundPages('shipping'))->toEqualCanonicalizing([$byTitle->id, $byExcerpt->id, $bySeo->id, $bySlug->id, $byBlock->id])
+    expect(foundPages('shipping'))->toEqualCanonicalizing([$byTitle->id, $byExcerpt->id, $bySeo->id, $bySeoTitle->id, $bySlug->id, $byBlock->id])
         ->and(foundPages('zzzmissing'))->toBe([])
         ->and(foundPages('shipping worldwide'))->toBe([$byBlock->id]);
 })->with('cmsEngines');
@@ -80,6 +81,7 @@ it('leaves out drafts, pages not yet due and unpublished blocks', function (stri
     app(Indexer::class)->reindex(app(CmsPageSearchIndex::class));
 
     expect(foundPages('widget'))->toBe([$live->id])
+        ->and(app(CmsSearch::class)->pages('widget')->total())->toBe(1)
         ->and(foundPages('hidden-word'))->toBe([]);
 })->with('cmsEngines');
 
@@ -204,4 +206,15 @@ it('understands every filter in the database fallback, and refuses a field it ca
         ->and(fn () => $ids(new Equals('title', 'x')))->toThrow(InvalidArgumentException::class)
         ->and(fn () => $ids(new Range('title', gte: 1)))->toThrow(InvalidArgumentException::class)
         ->and(app(Search::class)->search(CmsPageSearchIndex::NAME, new SearchQuery('alpha'))->ids())->toBe([$live->id]);
+});
+
+it('includes a page published exactly at a range bound, and starts at page one', function () {
+    cmsSearchOn('database');
+    $page = searchablePage('Bound page', ['published_at' => now()->subHour()->startOfSecond()]);
+    $at = $page->published_at->getTimestamp();
+
+    $hits = app(Search::class)->search(CmsPageSearchIndex::NAME, new SearchQuery(filter: new Range('published_at_ts', gte: $at, lte: $at)));
+
+    expect($hits->ids())->toBe([$page->id])
+        ->and(foundPages('bound', 0))->toBe([$page->id]);
 });
