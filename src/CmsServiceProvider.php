@@ -11,10 +11,13 @@ use Filagora\Cms\Contracts\PageUrlResolver;
 use Filagora\Cms\Contracts\PreviewResolver;
 use Filagora\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
 use Filagora\Cms\Media\MediaAssets;
+use Filagora\Cms\Models\CmsBlock;
 use Filagora\Cms\Navigation\NavigationItems;
 use Filagora\Cms\Navigation\NavigationLinkTypes;
 use Filagora\Cms\Preview\PreviewSession;
 use Filagora\Cms\Preview\PreviewShares;
+use Filagora\Cms\Search\CmsPageSearchIndex;
+use Filagora\Cms\Search\SearchRelations;
 use Filagora\Cms\Services\BlockDrafts;
 use Filagora\Cms\Services\CmsContent;
 use Filagora\Cms\Services\MediaAssetUsage;
@@ -34,7 +37,9 @@ use Filagora\Core\Schema\SchemaRegistry;
 use Filagora\Core\Support\GateAbilities;
 use Filagora\Entitlements\Registry\Definition;
 use Filagora\Entitlements\Registry\EntitlementRegistry;
+use Filagora\Search\Support\SearchIndexRegistry;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class CmsServiceProvider extends ServiceProvider
@@ -84,6 +89,7 @@ class CmsServiceProvider extends ServiceProvider
         $this->declareEntitlements();
         $this->defineGates();
         $this->registerPreviewMiddleware();
+        $this->registerSearch();
 
         $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'filagora-cms');
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'filagora-cms');
@@ -99,6 +105,29 @@ class CmsServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__.'/../resources/lang' => $this->app->langPath('vendor/filagora-cms'),
             ], 'filagora-cms-lang');
+        }
+    }
+
+    /**
+     * With `filagora-search` installed, published pages become a search index and a change to a
+     * live block keeps its page's document right. Without it there is nothing to set up.
+     */
+    private function registerSearch(): void
+    {
+        if (! class_exists(SearchIndexRegistry::class) || ! $this->app->bound(SearchIndexRegistry::class)) {
+            return;
+        }
+
+        $this->app->make(SearchIndexRegistry::class)->register($this->app->make(CmsPageSearchIndex::class));
+
+        foreach (['saved', 'deleted'] as $event) {
+            Event::listen("eloquent.{$event}: *", function (string $name, array $payload): void {
+                $model = $payload[0] ?? null;
+
+                if ($model instanceof CmsBlock) {
+                    $this->app->make(SearchRelations::class)->blockChanged($model);
+                }
+            });
         }
     }
 

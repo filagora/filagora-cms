@@ -85,4 +85,17 @@ return [
         'share_route' => 'cms.preview.share.open',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Search
+    |--------------------------------------------------------------------------
+    |
+    | Used when `filagora/filagora-search` is installed. `content_limit`: the most characters of a
+    | page's block text copied into its search document.
+    |
+    */
+    'search' => [
+        'content_limit' => 50000,
+    ],
+
 ];
