@@ -5,6 +5,12 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-16
+
+### Fixed
+
+- The database page search matched block text case-sensitively (MariaDB keeps JSON columns in a case-sensitive collation), so "browse" did not find a block saying "Browse". It now compares in lower case.
+
 ## [0.3.0] - 2026-10-16
 
 ### Added
