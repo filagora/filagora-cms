@@ -5,6 +5,8 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-25
+
 ### Fixed
 
 - `MarkPreviewResponsesUncacheable` was added to the `web` group on the router only, and the HTTP kernel overwrites the router's groups from its own whenever it syncs them, so in a real application the middleware was missing and previews could be cached and indexed. It is now appended through the kernel.
