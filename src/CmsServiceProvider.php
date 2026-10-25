@@ -38,6 +38,7 @@ use Filagora\Core\Support\GateAbilities;
 use Filagora\Entitlements\Registry\Definition;
 use Filagora\Entitlements\Registry\EntitlementRegistry;
 use Filagora\Search\Support\SearchIndexRegistry;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -159,9 +160,23 @@ class CmsServiceProvider extends ServiceProvider
      */
     private function registerPreviewMiddleware(): void
     {
-        if (config('filagora-cms.preview.uncacheable_middleware', true)) {
-            $this->app->make(Router::class)->pushMiddlewareToGroup('web', MarkPreviewResponsesUncacheable::class);
+        if (! config('filagora-cms.preview.uncacheable_middleware', true)) {
+            return;
         }
+
+        /** @var object $kernel A host may bind its own kernel, so only what it can do is relied on. */
+        $kernel = $this->app->make(HttpKernel::class);
+
+        // The HTTP kernel owns the middleware groups and copies them to the router whenever one
+        // changes, so a group edited on the router alone is overwritten by the next copy and the
+        // middleware silently disappears. Go through the kernel when it can take the change.
+        if (method_exists($kernel, 'appendMiddlewareToGroup')) {
+            $kernel->appendMiddlewareToGroup('web', MarkPreviewResponsesUncacheable::class);
+
+            return;
+        }
+
+        $this->app->make(Router::class)->pushMiddlewareToGroup('web', MarkPreviewResponsesUncacheable::class);
     }
 
     private function registerNavigationGroup(): void

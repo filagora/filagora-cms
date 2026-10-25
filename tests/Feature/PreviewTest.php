@@ -15,6 +15,7 @@ use Filagora\Cms\Support\NoPreview;
 use Filagora\Cms\Tests\Support\TestUser;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Filagora\Entitlements\Registry\EntitlementRegistry;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
@@ -404,6 +405,12 @@ it('puts that middleware in the web group, unless switched off', function () {
 
     expect($groups['web'] ?? [])->toContain(MarkPreviewResponsesUncacheable::class)
         ->and(config('filagora-cms.preview.uncacheable_middleware'))->toBeTrue();
+});
+
+it('keeps that middleware when the kernel syncs its own groups to the router', function () {
+    app(HttpKernel::class)->appendMiddlewareToGroup('web', 'unrelated');
+
+    expect(app(Router::class)->getMiddlewareGroups()['web'] ?? [])->toContain(MarkPreviewResponsesUncacheable::class);
 });
 
 it('declares the two abilities as entitlements and gates them', function () {
