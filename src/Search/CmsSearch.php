@@ -7,6 +7,7 @@ namespace Filagora\Cms\Search;
 use Filagora\Cms\Enums\CmsPageStatus;
 use Filagora\Cms\Models\CmsPage;
 use Filagora\Cms\Support\Models;
+use Filagora\Search\Enums\MatchingStrategy;
 use Filagora\Search\Filters\All;
 use Filagora\Search\Filters\Equals;
 use Filagora\Search\Filters\Range;
@@ -28,13 +29,14 @@ class CmsSearch
     /**
      * @return LengthAwarePaginator<int, CmsPage>
      */
-    public function pages(string $text, int $page = 1, int $perPage = self::PER_PAGE): LengthAwarePaginator
+    public function pages(string $text, int $page = 1, int $perPage = self::PER_PAGE, MatchingStrategy $matching = MatchingStrategy::All): LengthAwarePaginator
     {
         $result = $this->search->search(CmsPageSearchIndex::NAME, new SearchQuery(
             text: trim($text),
             filter: new All(new Equals('status', CmsPageStatus::PUBLISHED->value), new Range('published_at_ts', lte: now()->getTimestamp())),
             page: max(1, $page),
             perPage: $perPage,
+            matching: $matching,
         ));
 
         $rows = Models::class('page')::query()->whereIn('id', $result->ids() ?: [0])->get()->keyBy(fn (Model $page): string => (string) $page->getKey());

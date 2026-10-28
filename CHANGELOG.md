@@ -5,6 +5,12 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-28
+
+### Added
+
+- `CmsSearch::pages()` takes a `MatchingStrategy` (default `All`, unchanged), passed to the engine. Requires `filagora/filagora-search` `^0.1.1`.
+
 ## [0.3.2] - 2026-10-25
 
 ### Fixed
