@@ -9,6 +9,7 @@ use Filagora\Cms\Search\CmsPageDatabaseSearch;
 use Filagora\Cms\Search\CmsPageSearchIndex;
 use Filagora\Cms\Search\CmsSearch;
 use Filagora\Search\Engines\ArrayEngine;
+use Filagora\Search\Enums\MatchingStrategy;
 use Filagora\Search\Filters\All;
 use Filagora\Search\Filters\Any;
 use Filagora\Search\Filters\Equals;
@@ -17,8 +18,10 @@ use Filagora\Search\Filters\Not;
 use Filagora\Search\Filters\Range;
 use Filagora\Search\Indexing\Indexer;
 use Filagora\Search\Search;
+use Filagora\Search\Support\IndexDefinition;
 use Filagora\Search\Support\SearchEngines;
 use Filagora\Search\Support\SearchQuery;
+use Filagora\Search\Support\SearchResult;
 use Illuminate\Support\Facades\DB;
 
 /*
@@ -226,3 +229,25 @@ it('matches block text without regard to case', function (string $engine) {
     expect(foundPages('browse'))->toBe([$page->id])
         ->and(foundPages('THE FORUM'))->toBe([$page->id]);
 })->with('cmsEngines');
+
+it('passes the matching strategy it is asked for on to the engine', function () {
+    $engine = new class extends ArrayEngine
+    {
+        public ?MatchingStrategy $asked = null;
+
+        public function search(IndexDefinition $index, SearchQuery $query): SearchResult
+        {
+            $this->asked = $query->matching;
+
+            return parent::search($index, $query);
+        }
+    };
+    app(SearchEngines::class)->extend('array', fn () => $engine);
+    config(['filagora-search.engine' => 'array']);
+
+    app(CmsSearch::class)->pages('zen cart 1.5.8');
+    expect($engine->asked)->toBe(MatchingStrategy::All);
+
+    app(CmsSearch::class)->pages('zen cart 1.5.8', matching: MatchingStrategy::Last);
+    expect($engine->asked)->toBe(MatchingStrategy::Last);
+});
