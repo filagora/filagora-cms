@@ -11,7 +11,7 @@ package). With neither, the editor denies everyone.
 > The package is at `0.2`: the API may change between `0.x` minor versions. There is no frontend:
 > it is models, services, events and staff screens, and you render the pages.
 
-## What it does
+## What it provides
 
 - **Fourteen tables**, prefixed `filagora_` by default, matching an existing site's tables index
   for index so `php artisan filagora:adopt` can accept them: `cms_pages`, `cms_blocks`,
@@ -128,9 +128,13 @@ These services do not check who may call them; the Filament screens do.
     derives the media paths (so usage tracking follows). A profile package registers its own
     types the same way.
 
-## Still to come
+### Still to come
 
 Nothing planned for this package beyond release.
+
+## Requirements
+
+PHP 8.4, Laravel 13 and Filament 5. Tested against MariaDB 11.4. Requires [`filagora/filagora-core`](https://github.com/filagora/filagora-core).
 
 ## Install
 
@@ -148,13 +152,30 @@ Schedule `filagora:cms:publish-due` every minute to publish scheduled pages, men
 Implement `PageUrlResolver` if your pages are not served at `/pages/{slug}`. Publish the config
 with `--tag=filagora-cms-config` and the editor text with `--tag=filagora-cms-lang`.
 
+## Configuration
+
+`config/filagora-cms.php` is merged with the host's copy, so list only what
+differs. Publish it with `php artisan vendor:publish --tag=filagora-cms-config`.
+
+## Extending
+
+Extend through documented contracts, events and registries. Anything not documented
+is `@internal`.
+
 ## Testing
 
 ```bash
 composer test
 ```
 
-Tests run against a real MariaDB database named `testing`.
+Tests run against a real MariaDB, never SQLite, so engine behaviour (FULLTEXT,
+`ONLY_FULL_GROUP_BY`, collation) matches production. Host and credentials come from
+your environment; the database is always named `testing`, never your development one.
+
+## Local development (DDEV)
+
+`.ddev/` is included. `ddev start` creates both `db` and `testing` (run `ddev restart` once
+if `testing` is missing), then `ddev exec vendor/bin/pest`.
 
 ## Licence
 
