@@ -13,6 +13,35 @@ package). With neither, the editor denies everyone.
 
 ## What it provides
 
+### Overview
+
+Pages, blocks, navigations, media and a draft, version, schedule and preview workflow for Filagora.
+
+### Tables
+
+`cms_pages`, `cms_blocks`, `cms_block_versions`, `cms_page_versions`, `cms_page_drafts`, `cms_page_draft_variants`, `cms_navigations`, `cms_navigation_versions`, `cms_navigation_drafts`, `cms_navigation_draft_variants`, `cms_tags`, `cms_page_tag`, `cms_media_assets`, `cms_preview_shares`, prefixed `filagora_` by default. A site that already has them can run `php artisan filagora:adopt` instead of migrating.
+
+### Commands
+
+| Command | What it does |
+| --- | --- |
+| `filagora:cms:publish-due` | Publish CMS page and menu drafts whose scheduled publish time has arrived. |
+
+### Events
+
+- `CmsBlockPublished`: A reusable block's staged copy was applied to the live block and a version recorded.
+- `CmsNavigationPublished`: A menu draft was applied to the live menu and a version recorded.
+- `CmsPagePublished`: A page draft was applied to the live page and a version recorded.
+
+### Access
+
+| Ability | Entitlement key |
+| --- | --- |
+| `filagora.cms.manage` | `filagora.cms.manage` |
+| `filagora.cms.preview` | `filagora.cms.preview` |
+
+### Using it
+
 - **Fourteen tables**, prefixed `filagora_` by default, matching an existing site's tables index
   for index so `php artisan filagora:adopt` can accept them: `cms_pages`, `cms_blocks`,
   `cms_block_versions`, `cms_page_versions`, `cms_page_drafts`, `cms_page_draft_variants`,
@@ -128,7 +157,7 @@ These services do not check who may call them; the Filament screens do.
     derives the media paths (so usage tracking follows). A profile package registers its own
     types the same way.
 
-### Still to come
+#### Still to come
 
 Nothing planned for this package beyond release.
 
