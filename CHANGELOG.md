@@ -5,6 +5,8 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.8] - 2026-11-20
+
 ### Added
 
 - A preview can be chosen by the address, for one request and with no session: `?preview=TOKEN` (a usable share's token) shows that share's pinned drafts, and `?preview=off` shows the live site even while a preview is on, so a preview and the original can be compared at the same URL in two tabs. An unknown, revoked or expired token is served live. A token in the address wins over an editor's own preview for that request, and starts no session and counts no open. `PreviewSession::isFromUrl()` and `isViewingLive()` let a banner say which. The parameter name is `filagora-cms.preview.query_parameter` (default `preview`).
