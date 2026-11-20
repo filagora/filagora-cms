@@ -5,6 +5,8 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-11-20
+
 ### Added
 
 - A menu can have a heading (`cms_navigations.title`, optional), edited on the menu form and staged in the draft like its links, so it is versioned, diffed on publish, restorable and previewable. `CmsContent::navigationTitle($name)` returns it, or null so a site can fall back to its own heading. Adds a migration (guarded, so a site that already has the column is unaffected) and updates the schema snapshot.
