@@ -116,6 +116,15 @@ These services do not check who may call them; the Filament screens do.
     `open($token, $session)` starts the preview for whoever holds it and counts the open;
     `revoke()` ends it, and so does expiry, at the next request. The holder previews in their own
     browser session; nothing is made public. `landingPage()` says where to send them.
+  - **In the address.** `/privacy?preview=TOKEN` shows that share's pinned drafts for that one
+    request: no session is started, no open is counted, and `/privacy` without it is the live
+    page. `/privacy?preview=off` shows the live page for one request even while a preview is on,
+    so the two can be compared side by side. An unknown, revoked or expired token is served live.
+    The address wins over an editor's own preview for that request. A draft menu appears on every
+    page, so to browse the whole site in preview open the share link (`open()`) instead.
+    `isFromUrl()` and `isViewingLive()` tell a banner which applies. The parameter name is
+    `filagora-cms.preview.query_parameter`. Tokens in an address reach logs and history: keep
+    shares short-lived, and keep an edge cache from storing any request that has the parameter.
   - `items()` describes what is being previewed (for a banner) and `currentSelection()` bundles an
     editor's own preview for sharing.
   - `MarkPreviewResponsesUncacheable` marks every response `no-store, private` and
