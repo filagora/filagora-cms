@@ -919,6 +919,14 @@ return [
                     'auto_increment' => false,
                     'generation' => null,
                 ],
+                'title' => [
+                    'type' => 'varchar(255)',
+                    'nullable' => true,
+                    'default' => null,
+                    'collation' => 'utf8mb4_unicode_ci',
+                    'auto_increment' => false,
+                    'generation' => null,
+                ],
             ],
             'indexes' => [
                 'cms_navigations_name_unique' => [

@@ -148,6 +148,21 @@ it('lets the readers serve the previewed page and menu through the real session'
         ->and(array_column(app(CmsContent::class)->navigationItems('Main'), 'label'))->toBe(['Staged']);
 });
 
+it('previews a menu\'s staged heading and falls back to the live one', function () {
+    browser();
+    editor();
+    $menu = previewMenu();
+    $menu->update(['title' => 'Legal']);
+    app(NavigationDrafts::class)->saveDraft($menu, [['label' => 'Staged', 'url' => '/staged']], null, 'Policies');
+
+    app()->forgetInstance(CmsContent::class);
+    expect(app(CmsContent::class)->navigationTitle('Main'))->toBe('Legal');
+
+    previewSession()->addNavigation($menu);
+    app()->forgetInstance(CmsContent::class);
+    expect(app(CmsContent::class)->navigationTitle('Main'))->toBe('Policies');
+});
+
 it('does not preview for someone who may not, even with a preview stored in their session', function () {
     browser();
     $page = previewPage();

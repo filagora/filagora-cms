@@ -31,9 +31,18 @@ class NavigationDraftDiff
             return ['changes' => [], 'count' => 0];
         }
 
+        $changes = [];
+
+        if ($draft->stagesTitle() && $draft->title() !== $this->clean($navigation->title)) {
+            $changes[] = [
+                'status' => 'Changed',
+                'label' => 'Heading',
+                'details' => [($this->clean($navigation->title) ?? '(none)').' → '.($draft->title() ?? '(none)')],
+            ];
+        }
+
         $live = $this->flatten(is_array($navigation->items) ? $navigation->items : []);
         $staged = $this->flatten($draft->items());
-        $changes = [];
 
         foreach ($staged as $path => $item) {
             if (! isset($live[$path])) {
@@ -60,6 +69,13 @@ class NavigationDraftDiff
         }
 
         return ['changes' => $changes, 'count' => count($changes)];
+    }
+
+    private function clean(?string $title): ?string
+    {
+        $title = $title !== null ? trim($title) : '';
+
+        return $title === '' ? null : $title;
     }
 
     /**

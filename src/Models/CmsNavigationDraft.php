@@ -82,6 +82,25 @@ class CmsNavigationDraft extends Model
     }
 
     /**
+     * Whether this draft stages a heading. Drafts started before menus had one do not, and publishing
+     * them leaves the live heading alone.
+     */
+    public function stagesTitle(): bool
+    {
+        return array_key_exists('title', $this->payload);
+    }
+
+    /**
+     * The staged heading; null when it is blank or not staged.
+     */
+    public function title(): ?string
+    {
+        $title = $this->payload['title'] ?? null;
+
+        return is_string($title) && trim($title) !== '' ? trim($title) : null;
+    }
+
+    /**
      * The staged menu items.
      *
      * @return list<array<string, mixed>>

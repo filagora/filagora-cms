@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Cache;
  *
  * @property int $id
  * @property string $name
+ * @property string|null $title
  * @property array<int, array<string, mixed>>|null $items
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -28,6 +29,7 @@ class CmsNavigation extends Model
 
     protected $fillable = [
         'name',
+        'title',
         'items',
     ];
 

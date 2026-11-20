@@ -17,10 +17,27 @@ const CMS_TABLES = [
     'cms_tags', 'cms_page_tag', 'cms_media_assets', 'cms_preview_shares',
 ];
 const CMS_MIGRATION = '2026_10_12_100000_create_filagora_cms_tables';
+const CMS_TITLE_MIGRATION = '2026_11_20_000000_add_title_to_cms_navigations_table';
 
-function cmsMigration(): object
+function cmsMigration(string $name = CMS_MIGRATION): object
 {
-    return require __DIR__.'/../../database/migrations/'.CMS_MIGRATION.'.php';
+    return require __DIR__.'/../../database/migrations/'.$name.'.php';
+}
+
+/**
+ * Applies or reverses the whole set, the title migration after the create one.
+ */
+function cmsMigrations(string $direction): void
+{
+    if ($direction === 'down') {
+        cmsMigration(CMS_TITLE_MIGRATION)->down();
+        cmsMigration()->down();
+
+        return;
+    }
+
+    cmsMigration()->up();
+    cmsMigration(CMS_TITLE_MIGRATION)->up();
 }
 
 function cmsSnapshot()
@@ -30,16 +47,16 @@ function cmsSnapshot()
 
 afterEach(function () {
     config(['filagora.table_prefix' => '']);
-    cmsMigration()->down();
+    cmsMigrations('down');
     config(['filagora.table_prefix' => 'filagora_']);
-    cmsMigration()->down();
-    cmsMigration()->up();
+    cmsMigrations('down');
+    cmsMigrations('up');
 });
 
 it('ships a snapshot of the fourteen tables that matches the migration, column order included', function () {
     expect(cmsSnapshot())->not->toBeNull()
         ->and(array_keys(cmsSnapshot()->tables))->toBe(CMS_TABLES)
-        ->and(cmsSnapshot()->migrationNames())->toBe([CMS_MIGRATION]);
+        ->and(cmsSnapshot()->migrationNames())->toBe([CMS_MIGRATION, CMS_TITLE_MIGRATION]);
 
     foreach (cmsSnapshot()->tables as $base => $expected) {
         expect(TableShape::inspect($base)->differencesFrom($expected, compareColumnOrder: true))->toBe([], $base);
@@ -78,8 +95,8 @@ it('keeps the long identifiers within the database limit under the default prefi
 function existingCmsTables(bool $withExtra): void
 {
     config(['filagora.table_prefix' => '']);
-    cmsMigration()->up();
-    DB::table('migrations')->where('migration', CMS_MIGRATION)->delete();
+    cmsMigrations('up');
+    DB::table('migrations')->whereIn('migration', [CMS_MIGRATION, CMS_TITLE_MIGRATION])->delete();
 
     if ($withExtra) {
         Schema::table('cms_pages', fn (Blueprint $table) => $table->unsignedBigInteger('legacy_content_id')->nullable()->unique('cms_pages_legacy_content_id_unique'));
@@ -88,26 +105,26 @@ function existingCmsTables(bool $withExtra): void
 
 it('adopts the tables of an existing site and records the migration', function () {
     config(['filagora.table_prefix' => '']);
-    cmsMigration()->down();
+    cmsMigrations('down');
     config(['filagora.table_prefix' => 'filagora_']);
-    cmsMigration()->down();
+    cmsMigrations('down');
     existingCmsTables(false);
 
     $plan = app(Adopter::class)->planFor(cmsSnapshot());
 
     expect($plan->status)->toBe(AdoptionStatus::Adoptable, implode('; ', $plan->differences))
-        ->and($plan->pendingMigrations)->toBe([CMS_MIGRATION]);
+        ->and($plan->pendingMigrations)->toBe([CMS_MIGRATION, CMS_TITLE_MIGRATION]);
 
     $this->artisan('filagora:adopt', ['--package' => 'cms'])->assertExitCode(0);
 
-    expect(DB::table('migrations')->where('migration', CMS_MIGRATION)->exists())->toBeTrue();
+    expect(DB::table('migrations')->whereIn('migration', [CMS_MIGRATION, CMS_TITLE_MIGRATION])->count())->toBe(2);
 });
 
 it('names an undeclared extra column, and accepts it once a profile declares it exactly', function () {
     config(['filagora.table_prefix' => '']);
-    cmsMigration()->down();
+    cmsMigrations('down');
     config(['filagora.table_prefix' => 'filagora_']);
-    cmsMigration()->down();
+    cmsMigrations('down');
     existingCmsTables(true);
 
     $plan = app(Adopter::class)->planFor(cmsSnapshot());
@@ -130,9 +147,9 @@ it('names an undeclared extra column, and accepts it once a profile declares it 
 
 it('refuses a site that lost an index or a foreign key', function () {
     config(['filagora.table_prefix' => '']);
-    cmsMigration()->down();
+    cmsMigrations('down');
     config(['filagora.table_prefix' => 'filagora_']);
-    cmsMigration()->down();
+    cmsMigrations('down');
     existingCmsTables(false);
     Schema::table('cms_blocks', fn (Blueprint $table) => $table->dropIndex('cms_blocks_is_draft_index'));
     Schema::table('cms_page_drafts', fn (Blueprint $table) => $table->dropForeign('cms_page_drafts_updated_by_id_foreign'));
