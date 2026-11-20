@@ -27,7 +27,7 @@ use Illuminate\Support\Str;
 
 /**
  * Edits go to the working draft; the live menu is untouched until Publish. The menu's name is an
- * identifier the site relies on, so a rename applies at once; only the items are staged.
+ * identifier the site relies on, so a rename applies at once; the heading and the items are staged.
  */
 class EditCmsNavigation extends EditRecord
 {
@@ -39,7 +39,12 @@ class EditCmsNavigation extends EditRecord
      */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        return array_merge($data, ['items' => app(NavigationDrafts::class)->editorItems($this->menu(), auth()->user())]);
+        $drafts = app(NavigationDrafts::class);
+
+        return array_merge($data, [
+            'items' => $drafts->editorItems($this->menu(), auth()->user()),
+            'title' => $drafts->editorTitle($this->menu(), auth()->user()),
+        ]);
     }
 
     /**
@@ -54,7 +59,7 @@ class EditCmsNavigation extends EditRecord
             $record->update(['name' => $name]);
         }
 
-        app(NavigationDrafts::class)->saveDraft($record, is_array($data['items'] ?? null) ? $data['items'] : [], auth()->user());
+        app(NavigationDrafts::class)->saveDraft($record, is_array($data['items'] ?? null) ? $data['items'] : [], auth()->user(), (string) ($data['title'] ?? ''));
 
         return $record;
     }

@@ -393,6 +393,26 @@ it('edits a menu through its draft, publishes it, and applies a rename at once',
         ->and($menu->versions()->first()->change_summary)->toBe('Reworded');
 });
 
+it('stages a menu heading from the edit form and publishes it', function () {
+    cmsEditor();
+    $menu = CmsNavigation::create(['name' => 'footer_legal', 'title' => 'Legal', 'items' => [['label' => 'Privacy', 'type' => 'url', 'url' => '/privacy', 'target' => '_self']]]);
+
+    $component = Livewire::test(EditCmsNavigation::class, ['record' => $menu->getKey()])
+        ->assertFormSet(['title' => 'Legal'])
+        ->fillForm(['title' => 'Policies'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($menu->refresh()->title)->toBe('Legal');
+
+    $component->callAction('publish')->assertNotified('Published');
+
+    expect($menu->refresh()->title)->toBe('Policies');
+
+    Livewire::test(CreateCmsNavigation::class)->fillForm(['name' => 'footer_useful', 'title' => 'Useful Links'])->call('create')->assertHasNoFormErrors();
+    expect(CmsNavigation::where('name', 'footer_useful')->sole()->title)->toBe('Useful Links');
+});
+
 it('schedules, discards and restores a menu from its versions', function () {
     cmsEditor();
     $menu = CmsNavigation::create(['name' => 'footer', 'items' => [['label' => 'One', 'url' => '/1']]]);

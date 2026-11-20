@@ -28,6 +28,10 @@ class CmsNavigationForm
                         ->maxLength(255)
                         ->unique(ignoreRecord: true)
                         ->helperText(__('filagora-cms::ui.cms_navigation_form.the_name_your_site_looks_the')),
+                    TextInput::make('title')
+                        ->label(__('filagora-cms::ui.cms_navigation_form.heading'))
+                        ->maxLength(255)
+                        ->helperText(__('filagora-cms::ui.cms_navigation_form.shown_above_the_menu_by_sites_that')),
                 ]),
             Section::make(__('filagora-cms::ui.cms_navigation_form.links'))
                 ->description(__('filagora-cms::ui.cms_navigation_form.use_child_links_to_build_a'))

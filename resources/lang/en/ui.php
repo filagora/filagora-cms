@@ -177,6 +177,8 @@ return [
         'one_record_per_menu_location_add' => 'One record per menu location. Add links in the order they should appear.',
         'menu_key' => 'Menu key',
         'the_name_your_site_looks_the' => 'The name your site looks the menu up by, for example header or footer.',
+        'heading' => 'Heading',
+        'shown_above_the_menu_by_sites_that' => 'Shown above the menu by sites that display one, for example a footer column. Leave empty to use the site\'s own heading.',
         'links' => 'Links',
         'use_child_links_to_build_a' => 'Use child links to build a dropdown; a dropdown link can in turn hold its own links as a group (two levels below a top-level link). Footer menus should usually stay flat.',
         'link_label' => 'Link label',

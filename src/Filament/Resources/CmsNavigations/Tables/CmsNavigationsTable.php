@@ -22,6 +22,7 @@ class CmsNavigationsTable
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('draft'))
             ->columns([
                 TextColumn::make('name')->label(__('filagora-cms::ui.cms_navigations_table.menu'))->weight('medium')->searchable(),
+                TextColumn::make('title')->label(__('filagora-cms::ui.cms_navigation_form.heading'))->placeholder('—')->toggleable(),
                 TextColumn::make('items')
                     ->label(__('filagora-cms::ui.cms_navigations_table.links'))
                     ->state(fn (CmsNavigation $record): string => (string) count(is_array($record->items) ? $record->items : []))

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Filagora\Cms\Services;
 
 use Filagora\Cms\Contracts\PreviewResolver;
+use Filagora\Cms\Contracts\ResolvesPreviewedMenuTitles;
 use Filagora\Cms\Models\CmsBlock;
 use Filagora\Cms\Models\CmsMediaAsset;
 use Filagora\Cms\Models\CmsNavigation;
@@ -78,6 +79,10 @@ class CmsContent
             if ($previewed instanceof CmsNavigation) {
                 $previewed->items = $draftItems;
 
+                if ($this->preview instanceof ResolvesPreviewedMenuTitles) {
+                    $previewed->title = $this->preview->draftTitleFor($name) ?? $previewed->title;
+                }
+
                 return $this->visibleNavigation($previewed);
             }
         }
@@ -93,6 +98,17 @@ class CmsContent
         }
 
         return $this->visibleNavigation($this->navigations[$name]);
+    }
+
+    /**
+     * The heading set for a menu (a footer column's "Policies"), or null when it has none, so the
+     * site can fall back to its own.
+     */
+    public function navigationTitle(string $name): ?string
+    {
+        $title = $this->navigation($name)?->title;
+
+        return is_string($title) && trim($title) !== '' ? trim($title) : null;
     }
 
     /**
@@ -233,6 +249,7 @@ class CmsContent
         return [
             'id' => (int) $navigation->id,
             'name' => (string) $navigation->name,
+            'title' => $navigation->title,
             'items' => is_array($navigation->items) ? $navigation->items : [],
             'created_at' => $navigation->created_at?->toISOString(),
             'updated_at' => $navigation->updated_at?->toISOString(),
@@ -257,6 +274,7 @@ class CmsContent
         return (new $class)->newFromBuilder([
             'id' => $id,
             'name' => $name,
+            'title' => is_string($payload['title'] ?? null) ? $payload['title'] : null,
             'items' => json_encode(is_array($payload['items'] ?? null) ? $payload['items'] : []),
             'created_at' => $this->timestamp($payload['created_at'] ?? null),
             'updated_at' => $this->timestamp($payload['updated_at'] ?? null),

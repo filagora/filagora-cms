@@ -6,6 +6,7 @@ namespace Filagora\Cms\Preview;
 
 use DateTimeInterface;
 use Filagora\Cms\Contracts\PreviewResolver;
+use Filagora\Cms\Contracts\ResolvesPreviewedMenuTitles;
 use Filagora\Cms\Models\CmsNavigation;
 use Filagora\Cms\Models\CmsPage;
 use Filagora\Cms\Models\CmsPreviewShare;
@@ -27,7 +28,7 @@ use Illuminate\Support\Facades\Gate;
  * its working draft), or a shared preview link opened by anyone, which pins each item to a named
  * variant. Public visitors with neither never see a draft.
  */
-class PreviewSession implements PreviewResolver
+class PreviewSession implements PreviewResolver, ResolvesPreviewedMenuTitles
 {
     public const SESSION_KEY = 'cms_preview';
 
@@ -210,6 +211,36 @@ class PreviewSession implements PreviewResolver
         return is_string($variant)
             ? $this->navigationDrafts->itemsForVariant($navigation, $variant)
             : $navigation->draft()->first()?->items();
+    }
+
+    /**
+     * The heading the previewed draft of a menu stages; null when it is not being previewed or
+     * stages none.
+     */
+    public function draftTitleFor(string $name): ?string
+    {
+        $resolved = $this->resolved();
+
+        if (! array_key_exists($name, $resolved['navigations'])) {
+            return null;
+        }
+
+        /** @var CmsNavigation|null $navigation */
+        $navigation = Models::class('navigation')::query()->where('name', $name)->first();
+
+        if ($navigation === null) {
+            return null;
+        }
+
+        $variant = $resolved['navigations'][$name];
+
+        if (is_string($variant)) {
+            return $this->navigationDrafts->titleForVariant($navigation, $variant);
+        }
+
+        $draft = $navigation->draft()->first();
+
+        return $draft?->stagesTitle() ? $draft->title() : null;
     }
 
     public function pageForSlug(string $slug): ?CmsPage

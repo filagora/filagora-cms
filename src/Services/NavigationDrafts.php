@@ -46,7 +46,7 @@ class NavigationDrafts
             $draft = $this->drafts()->create([
                 'cms_navigation_id' => $navigation->id,
                 'variant_name' => $variantName ?? $this->freeVariantName($this->parkedVariantNames($navigation)),
-                'payload' => ['items' => $this->liveItems($navigation)],
+                'payload' => ['items' => $this->liveItems($navigation), 'title' => $this->liveTitle($navigation)],
                 'base_version_id' => $this->latestVersionId($navigation),
                 'is_dirty' => false,
                 'updated_by_id' => $actor?->getAuthIdentifier(),
@@ -59,11 +59,20 @@ class NavigationDrafts
 
     /**
      * @param  array<int, array<string, mixed>>  $items
+     * @param  string|null  $title  The heading to stage; blank clears it, null leaves the draft's as it is.
      */
-    public function saveDraft(CmsNavigation $navigation, array $items, ?Authenticatable $actor = null): CmsNavigationDraft
+    public function saveDraft(CmsNavigation $navigation, array $items, ?Authenticatable $actor = null, ?string $title = null): CmsNavigationDraft
     {
         $draft = $this->ensureDraft($navigation, $actor);
-        $draft->update(['payload' => ['items' => array_values($items)], 'is_dirty' => true, 'updated_by_id' => $actor?->getAuthIdentifier()]);
+        $payload = ['items' => array_values($items)];
+
+        if ($title !== null) {
+            $payload['title'] = $this->normalizedTitle($title);
+        } elseif ($draft->stagesTitle()) {
+            $payload['title'] = $draft->title();
+        }
+
+        $draft->update(['payload' => $payload, 'is_dirty' => true, 'updated_by_id' => $actor?->getAuthIdentifier()]);
         $navigation->unsetRelation('draft');
 
         return $draft;
@@ -77,6 +86,16 @@ class NavigationDrafts
     public function editorItems(CmsNavigation $navigation, ?Authenticatable $actor = null): array
     {
         return $this->ensureDraft($navigation, $actor)->items();
+    }
+
+    /**
+     * The heading for an editor: the working draft's, or the live one when the draft stages none.
+     */
+    public function editorTitle(CmsNavigation $navigation, ?Authenticatable $actor = null): ?string
+    {
+        $draft = $this->ensureDraft($navigation, $actor);
+
+        return $draft->stagesTitle() ? $draft->title() : $this->liveTitle($navigation);
     }
 
     // ------------------------------------------------------------------ variants
@@ -239,6 +258,27 @@ class NavigationDrafts
         return is_array($items) ? array_values($items) : null;
     }
 
+    /**
+     * The heading the named variant would publish; null when it stages none or there is no such variant.
+     */
+    public function titleForVariant(CmsNavigation $navigation, string $name): ?string
+    {
+        $draft = $this->drafts()->where('cms_navigation_id', $navigation->id)->where('variant_name', $name)->first();
+
+        if ($draft !== null) {
+            return $draft->stagesTitle() ? $draft->title() : $this->liveTitle($navigation);
+        }
+
+        $variant = $this->variants()->where('cms_navigation_id', $navigation->id)->where('name', $name)->first();
+        $payload = $variant?->snapshot['payload'] ?? null;
+
+        if (! is_array($payload) || ! array_key_exists('title', $payload)) {
+            return $this->liveTitle($navigation);
+        }
+
+        return $this->normalizedTitle(is_string($payload['title']) ? $payload['title'] : null);
+    }
+
     // ------------------------------------------------------------------ discard, stale, restore
 
     /**
@@ -276,7 +316,15 @@ class NavigationDrafts
             $this->discard($navigation);
             $draft = $this->ensureDraft($navigation, $actor, $variantName);
             $items = is_array($version->snapshot['items'] ?? null) ? array_values($version->snapshot['items']) : [];
-            $draft->update(['payload' => ['items' => $items], 'is_dirty' => true, 'updated_by_id' => $actor?->getAuthIdentifier()]);
+            $payload = ['items' => $items];
+
+            if (array_key_exists('title', $version->snapshot)) {
+                $payload['title'] = $this->normalizedTitle(is_string($version->snapshot['title']) ? $version->snapshot['title'] : null);
+            } elseif ($draft->stagesTitle()) {
+                $payload['title'] = $draft->title();
+            }
+
+            $draft->update(['payload' => $payload, 'is_dirty' => true, 'updated_by_id' => $actor?->getAuthIdentifier()]);
 
             return $draft;
         });
@@ -300,6 +348,11 @@ class NavigationDrafts
             }
 
             $navigation->items = $draft->items();
+
+            if ($draft->stagesTitle()) {
+                $navigation->title = $draft->title();
+            }
+
             $navigation->save();
             $draft->delete();
             $navigation->unsetRelation('draft');
@@ -404,6 +457,18 @@ class NavigationDrafts
         return is_array($navigation->items) ? array_values($navigation->items) : [];
     }
 
+    private function liveTitle(CmsNavigation $navigation): ?string
+    {
+        return $this->normalizedTitle($navigation->title);
+    }
+
+    private function normalizedTitle(?string $title): ?string
+    {
+        $title = $title !== null ? trim($title) : '';
+
+        return $title === '' ? null : $title;
+    }
+
     private function latestVersionId(CmsNavigation $navigation): ?int
     {
         $id = $this->versions()->where('cms_navigation_id', $navigation->id)->max('id');
@@ -419,7 +484,7 @@ class NavigationDrafts
         return $this->versions()->create([
             'cms_navigation_id' => $navigation->id,
             'version_number' => $next,
-            'snapshot' => ['name' => (string) $navigation->name, 'items' => $this->liveItems($navigation)],
+            'snapshot' => ['name' => (string) $navigation->name, 'title' => $this->liveTitle($navigation), 'items' => $this->liveItems($navigation)],
             'change_summary' => $summary !== null ? trim($summary) : null,
             'created_by_id' => $actor?->getAuthIdentifier(),
             'created_at' => now(),

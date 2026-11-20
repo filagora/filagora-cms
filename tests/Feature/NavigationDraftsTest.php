@@ -233,7 +233,7 @@ it('publishes the draft onto the live menu, records a version with name and item
         ->and($version->version_number)->toBe(1)
         ->and($version->change_summary)->toBe('Rework')
         ->and($version->created_by_id)->toBe($actor->id)
-        ->and(array_keys($version->snapshot))->toBe(['name', 'items'])
+        ->and(array_keys($version->snapshot))->toBe(['name', 'title', 'items'])
         ->and($version->snapshot['name'])->toBe('Main')
         ->and(labels($version->snapshot['items']))->toBe(['New']);
     Event::assertDispatched(CmsNavigationPublished::class, fn (CmsNavigationPublished $e) => $e->navigation->is($menu) && $e->version->is($version) && $e->actor?->is($actor));
@@ -359,4 +359,87 @@ it('tells two items with the same label under one parent apart, and names an unt
     $labels = array_column(app(NavigationDraftDiff::class)->forNavigation($menu)['changes'], 'label');
 
     expect($labels)->toBe(['Same #2', '(untitled)']);
+});
+
+// ------------------------------------------------------------------ heading
+
+it('stages a heading in the draft and shows it only once published, recording it in the version', function () {
+    $menu = siteMenu();
+    $menu->update(['title' => 'Legal']);
+    app()->forgetInstance(CmsContent::class);
+    expect(app(CmsContent::class)->navigationTitle('Main'))->toBe('Legal');
+
+    menus()->saveDraft($menu, $menu->items, null, '  Policies ');
+    app()->forgetInstance(CmsContent::class);
+
+    expect(menus()->editorTitle($menu))->toBe('Policies')
+        ->and($menu->refresh()->title)->toBe('Legal')
+        ->and(app(CmsContent::class)->navigationTitle('Main'))->toBe('Legal');
+
+    $version = menus()->publish($menu);
+    app()->forgetInstance(CmsContent::class);
+
+    expect($menu->refresh()->title)->toBe('Policies')
+        ->and($version->snapshot['title'])->toBe('Policies')
+        ->and(app(CmsContent::class)->navigationTitle('Main'))->toBe('Policies');
+});
+
+it('clears the heading when it is saved blank, and keeps it when a save passes none', function () {
+    $menu = siteMenu();
+    $menu->update(['title' => 'Legal']);
+
+    menus()->saveDraft($menu, $menu->items);
+    menus()->publish($menu);
+    expect($menu->refresh()->title)->toBe('Legal');
+
+    menus()->saveDraft($menu, $menu->items, null, '');
+    menus()->publish($menu);
+    app()->forgetInstance(CmsContent::class);
+
+    expect($menu->refresh()->title)->toBeNull()
+        ->and(app(CmsContent::class)->navigationTitle('Main'))->toBeNull();
+});
+
+it('leaves the live heading alone when publishing a draft that predates headings', function () {
+    $menu = siteMenu();
+    $menu->update(['title' => 'Legal']);
+    CmsNavigationDraft::create(['cms_navigation_id' => $menu->id, 'variant_name' => 'Main', 'payload' => ['items' => [['label' => 'Old', 'url' => '/old']]], 'is_dirty' => true]);
+
+    expect(menus()->editorTitle($menu))->toBe('Legal');
+    menus()->publish($menu);
+
+    expect($menu->refresh()->title)->toBe('Legal')
+        ->and(labels($menu->items))->toBe(['Old']);
+});
+
+it('carries the heading through a parked variant and a restored version', function () {
+    $menu = siteMenu();
+    $menu->update(['title' => 'Legal']);
+    menus()->saveDraft($menu, $menu->items, null, 'Policies');
+    menus()->createVariant($menu, 'Alt', fromLive: true);
+
+    expect(menus()->editorTitle($menu))->toBe('Legal')
+        ->and(menus()->titleForVariant($menu, 'Main'))->toBe('Policies');
+
+    menus()->switchVariant($menu, 'Main');
+    expect(menus()->editorTitle($menu))->toBe('Policies');
+
+    $first = menus()->publish($menu);
+    menus()->saveDraft($menu, $menu->items, null, 'Terms');
+    menus()->publish($menu);
+    menus()->restoreVersionToDraft($menu, $first);
+
+    expect(menus()->editorTitle($menu))->toBe('Policies')
+        ->and($menu->refresh()->title)->toBe('Terms');
+});
+
+it('lists a heading change in the publish diff', function () {
+    $menu = siteMenu();
+    $menu->update(['title' => 'Legal']);
+    menus()->saveDraft($menu, $menu->items, null, 'Policies');
+
+    $diff = app(NavigationDraftDiff::class)->forNavigation($menu);
+
+    expect($diff['count'])->toBe(1)
+        ->and($diff['changes'][0])->toBe(['status' => 'Changed', 'label' => 'Heading', 'details' => ['Legal → Policies']]);
 });

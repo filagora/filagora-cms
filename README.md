@@ -60,7 +60,8 @@ Pages, blocks, navigations, media and a draft, version, schedule and preview wor
   or by custom route (a draft page is served only to its preview token), menus, a published
   reusable block by slug, and media assets by path. Menus are cached under
   `cms:navigation:{name}` for `navigation_cache_seconds` (default 300) and cleared when a menu is
-  saved. A request that is previewing unpublished changes is served those, through the
+  saved. `navigationTitle($name)` gives a menu's optional heading (a footer column's "Legal"),
+  or null so the site can use its own. A request that is previewing unpublished changes is served those, through the
   `PreviewResolver` contract (the default previews nothing).
 - **Menu items for a visitor** (`NavigationItems`): unknown link kinds become plain URLs, URLs
   are limited to relative paths and http(s), targets to `_self`, `_blank`, `_parent`, `_top`,
