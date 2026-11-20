@@ -395,6 +395,189 @@ it('finds only usable links by token', function () {
     expect(app(PreviewShares::class)->findUsable($token))->toBeNull();
 });
 
+// ------------------------------------------------------------------ preview in the address
+
+/**
+ * A request whose address carries the query, with a session, as the preview reads it.
+ */
+function browserAt(string $uri): Request
+{
+    $request = Request::create($uri);
+    $request->setLaravelSession(app('session.store'));
+    app()->instance('request', $request);
+    app()->forgetInstance(PreviewSession::class);
+    app()->forgetInstance(CmsContent::class);
+
+    return $request;
+}
+
+it('shows the pinned drafts for a token in the address, and the live site without it', function () {
+    [$share, $page] = sharedLink();
+    $token = $share->getRawOriginal('token');
+
+    browserAt('/about?preview='.$token);
+    expect(previewSession()->isActive())->toBeTrue()
+        ->and(previewSession()->isFromUrl())->toBeTrue()
+        ->and(previewSession()->isShared())->toBeTrue()
+        ->and(previewSession()->pageForSlug('about')?->title)->toBe('Main draft')
+        ->and(previewSession()->draftItemsFor('Main'))->toBe([['label' => 'Staged', 'url' => '/staged']]);
+
+    browserAt('/about');
+    expect(previewSession()->isActive())->toBeFalse()
+        ->and(previewSession()->isFromUrl())->toBeFalse()
+        ->and(previewSession()->pageForSlug('about'))->toBeNull()
+        ->and(previewSession()->draftItemsFor('Main'))->toBeNull();
+});
+
+it('remembers nothing after a token in the address: no session, no counted open', function () {
+    [$share] = sharedLink();
+
+    $request = browserAt('/about?preview='.$share->getRawOriginal('token'));
+    previewSession()->isActive();
+
+    expect($request->session()->has(PreviewSession::SHARE_SESSION_KEY))->toBeFalse()
+        ->and($request->session()->has(PreviewSession::SESSION_KEY))->toBeFalse()
+        ->and($share->refresh()->open_count)->toBe(0);
+
+    browserAt('/about');
+    expect(previewSession()->isActive())->toBeFalse();
+});
+
+it('works from the address with no session at all', function () {
+    [$share] = sharedLink();
+
+    $request = Request::create('/about?preview='.$share->getRawOriginal('token'));
+    app()->instance('request', $request);
+    app()->forgetInstance(PreviewSession::class);
+
+    expect(previewSession()->isActive())->toBeTrue();
+});
+
+it('serves the live site for an unknown, revoked or expired token, or one that is too long', function () {
+    [$share] = sharedLink();
+    $token = $share->getRawOriginal('token');
+
+    browserAt('/about?preview=not-a-real-token');
+    expect(previewSession()->isActive())->toBeFalse();
+
+    browserAt('/about?preview='.str_repeat('a', 500));
+    expect(previewSession()->isActive())->toBeFalse();
+
+    browserAt('/about?preview[]='.$token);
+    expect(previewSession()->isActive())->toBeFalse();
+
+    $this->travel(4)->days();
+    browserAt('/about?preview='.$token);
+    expect(previewSession()->isActive())->toBeFalse();
+
+    $this->travelBack();
+    app(PreviewShares::class)->revoke($share);
+    browserAt('/about?preview='.$token);
+    expect(previewSession()->isActive())->toBeFalse();
+});
+
+it('looks a token in the address up once per request however often it is asked', function () {
+    [$share] = sharedLink();
+    browserAt('/about?preview='.$share->getRawOriginal('token'));
+
+    DB::enableQueryLog();
+    previewSession()->isActive();
+    previewSession()->isActive();
+    previewSession()->pageForSlug('spring');
+
+    $lookups = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'filagora_cms_preview_shares'))->count();
+    expect($lookups)->toBe(1);
+});
+
+it('lets a token in the address win over an editor\'s own preview on that request only', function () {
+    [$share, $page] = sharedLink();
+    browserAt('/about');
+    editor();
+    previewSession()->addPage($page);
+    browserAt('/about?preview='.$share->getRawOriginal('token'));
+    expect(previewSession()->isShared())->toBeTrue();
+
+    browserAt('/about');
+    expect(previewSession()->isShared())->toBeFalse()
+        ->and(previewSession()->isActive())->toBeTrue();
+});
+
+it('shows an editor the live site for one request with ?preview=off, and keeps their preview', function () {
+    $page = previewPage();
+    app(PageDrafts::class)->saveDraftFields($page, ['title' => 'Staged title']);
+    browser();
+    editor();
+    previewSession()->addPage($page);
+
+    browserAt('/about?preview=off');
+    expect(previewSession()->isViewingLive())->toBeTrue()
+        ->and(previewSession()->isActive())->toBeFalse()
+        ->and(previewSession()->pageForSlug('about'))->toBeNull()
+        ->and(previewSession()->items())->toBe([]);
+
+    browserAt('/about');
+    expect(previewSession()->isViewingLive())->toBeFalse()
+        ->and(previewSession()->isActive())->toBeTrue()
+        ->and(previewSession()->pageForSlug('about')?->title)->toBe('Staged title');
+});
+
+it('shows the live site for ?preview=off to someone holding a shared link, then returns them to it', function () {
+    [$share] = sharedLink();
+    browser();
+    app(PreviewShares::class)->open($share->getRawOriginal('token'), previewSession());
+
+    browserAt('/about?preview=off');
+    expect(previewSession()->isViewingLive())->toBeTrue()
+        ->and(previewSession()->isActive())->toBeFalse();
+
+    browserAt('/about');
+    expect(previewSession()->isViewingLive())->toBeFalse()
+        ->and(previewSession()->isShared())->toBeTrue();
+});
+
+it('does not touch the database for an ordinary request when the address has no preview', function () {
+    browserAt('/about?page=2');
+    previewPage();
+
+    DB::enableQueryLog();
+    previewSession()->isActive();
+    previewSession()->isViewingLive();
+    previewSession()->pageForSlug('about');
+
+    expect(DB::getQueryLog())->toBe([]);
+});
+
+it('uses the configured query parameter', function () {
+    config(['filagora-cms.preview.query_parameter' => 'draft']);
+    [$share] = sharedLink();
+
+    browserAt('/about?preview='.$share->getRawOriginal('token'));
+    expect(previewSession()->isActive())->toBeFalse();
+
+    browserAt('/about?draft='.$share->getRawOriginal('token'));
+    expect(previewSession()->isActive())->toBeTrue();
+});
+
+it('marks a token or live-override response uncacheable, noindex and referrer-free', function () {
+    [$share] = sharedLink();
+    $middleware = app(MarkPreviewResponsesUncacheable::class);
+    $next = fn (Request $request): Response => new Response('ok');
+
+    foreach (['/about?preview='.$share->getRawOriginal('token'), '/about?preview=off'] as $uri) {
+        browserAt($uri);
+        $request = request();
+        $marked = app()->make(MarkPreviewResponsesUncacheable::class)->handle($request, $next);
+
+        expect($marked->headers->get('X-Robots-Tag'))->toBe('noindex, nofollow')
+            ->and($marked->headers->get('Cache-Control'))->toContain('no-store')
+            ->and($marked->headers->get('Referrer-Policy'))->toBe('no-referrer');
+    }
+
+    browserAt('/about');
+    $plain = app()->make(MarkPreviewResponsesUncacheable::class)->handle(request(), $next);
+    expect($plain->headers->get('Referrer-Policy'))->toBeNull();
+});
+
 // ------------------------------------------------------------------ middleware and abilities
 
 it('marks responses uncacheable and noindex only while a preview is in effect', function () {

@@ -36,6 +36,15 @@ class PreviewSession implements PreviewResolver, ResolvesPreviewedMenuTitles
 
     private const SHARE_ATTRIBUTE = 'cms_preview_share';
 
+    private const URL_SHARE_ATTRIBUTE = 'cms_preview_url_share';
+
+    /**
+     * The query value that shows the live site for one request, whatever else is being previewed.
+     */
+    public const LIVE = 'off';
+
+    private const MAX_TOKEN_LENGTH = 128;
+
     public function __construct(
         private readonly PageDrafts $pageDrafts,
         private readonly NavigationDrafts $navigationDrafts,
@@ -98,6 +107,24 @@ class PreviewSession implements PreviewResolver, ResolvesPreviewedMenuTitles
     public function sharedUntil(): ?DateTimeInterface
     {
         return $this->resolved()['share']?->expires_at;
+    }
+
+    /**
+     * True when the preview in effect comes from a token in the address (`?preview=TOKEN`), which
+     * applies to that one request only: no session is started and nothing is remembered.
+     */
+    public function isFromUrl(): bool
+    {
+        return $this->urlShare() !== null;
+    }
+
+    /**
+     * True when the address asks for the live site (`?preview=off`) for this request, so the
+     * original can be compared with a preview without ending it.
+     */
+    public function isViewingLive(): bool
+    {
+        return $this->queryValue() === self::LIVE;
     }
 
     /**
@@ -284,21 +311,27 @@ class PreviewSession implements PreviewResolver, ResolvesPreviewedMenuTitles
     }
 
     /**
-     * What is being previewed, and by which route: an editor's own session (items at their working
-     * drafts, `true`) or a shared link (items pinned to a variant name). The editor's session wins
+     * What is being previewed, and by which route. The address comes first and applies to this
+     * request only: `?preview=off` shows the live site, and `?preview=TOKEN` shows a usable share's
+     * pinned variants. Otherwise an editor's own session (items at their working drafts, `true`)
+     * or a shared link opened earlier (items pinned to a variant name); the editor's session wins
      * when both exist.
      *
      * @return array{active: bool, share: CmsPreviewShare|null, navigations: array<string, true|string>, pages: array<int, true|string>}
      */
     private function resolved(): array
     {
+        if ($this->isViewingLive()) {
+            return ['active' => false, 'share' => null, 'navigations' => [], 'pages' => []];
+        }
+
         $stored = $this->stored();
 
-        if (($stored['navigations'] !== [] || $stored['pages'] !== []) && $this->canPreview()) {
+        if ($this->urlShare() === null && ($stored['navigations'] !== [] || $stored['pages'] !== []) && $this->canPreview()) {
             return ['active' => true, 'share' => null, 'navigations' => $stored['navigations'], 'pages' => $stored['pages']];
         }
 
-        $share = $this->share();
+        $share = $this->urlShare() ?? $this->share();
 
         if ($share === null) {
             return ['active' => false, 'share' => null, 'navigations' => [], 'pages' => []];
@@ -318,6 +351,43 @@ class PreviewSession implements PreviewResolver, ResolvesPreviewedMenuTitles
             'navigations' => array_filter($share->navigations(), 'is_string'),
             'pages' => $pages,
         ];
+    }
+
+    /**
+     * The usable share named by the address, looked up once per request. Unknown, revoked and
+     * expired tokens (and anything that cannot be a token) resolve to nothing, so the request is
+     * served live.
+     */
+    private function urlShare(): ?CmsPreviewShare
+    {
+        $token = $this->queryValue();
+
+        if ($token === null || $token === self::LIVE || strlen($token) > self::MAX_TOKEN_LENGTH) {
+            return null;
+        }
+
+        $attributes = request()->attributes;
+
+        if (! $attributes->has(self::URL_SHARE_ATTRIBUTE)) {
+            /** @var Builder<CmsPreviewShare> $shares */
+            $shares = Models::class('preview_share')::query();
+            $attributes->set(self::URL_SHARE_ATTRIBUTE, $shares->usable()->where('token', $token)->first());
+        }
+
+        $share = $attributes->get(self::URL_SHARE_ATTRIBUTE);
+
+        return $share instanceof CmsPreviewShare ? $share : null;
+    }
+
+    private function queryValue(): ?string
+    {
+        if (! app()->bound('request')) {
+            return null;
+        }
+
+        $value = request()->query((string) config('filagora-cms.preview.query_parameter', 'preview'));
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 
     private function share(): ?CmsPreviewShare
