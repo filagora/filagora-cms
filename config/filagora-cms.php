@@ -75,17 +75,22 @@ return [
     | Previews
     |--------------------------------------------------------------------------
     |
-    | `uncacheable_middleware`: add the middleware that marks every response uncacheable and
-    | noindex while a preview is in effect to the `web` group. `share_route`: the name of the
-    | route you define to open a shared preview link (it takes a `token`). `query_parameter`: the
-    | query parameter that previews, or shows the live site, for one request without a session
-    | (`?preview=TOKEN` with a share's token, `?preview=off` for the live site).
+    | A preview is carried by the address: `/page?preview=TOKEN` (the token of a preview link)
+    | shows the drafts that link names, and the same address without it is the live site.
+    | `query_parameter`: its name. `uncacheable_middleware`: add the middleware that marks every
+    | response to a request with a token uncacheable, noindex and referrer-free to the `web` group.
+    | `carry_token`: add the middleware that keeps the token on links to other pages of the site
+    | and on redirects, so a draft menu can be followed from page to page; `carry_token_except`:
+    | path prefixes whose links are left alone (the staff area, sign-out). `share_route`: the name
+    | of the route you define to open a preview link (it takes a `token`).
     |
     */
     'preview' => [
         'uncacheable_middleware' => true,
         'share_route' => 'cms.preview.share.open',
         'query_parameter' => 'preview',
+        'carry_token' => true,
+        'carry_token_except' => [],
     ],
 
     /*
