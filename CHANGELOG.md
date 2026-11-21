@@ -5,6 +5,8 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-21
+
 ### Changed
 
 - **Breaking:** a preview is carried by the address alone. `/page?preview=TOKEN` shows the drafts a preview link names, and the same address without it is always the live page; no session or cookie is used. The editors' Preview buttons now make (or reuse) a link to the **working draft** of the page or menu, valid for a day, and open its address with the token. `PreviewShares::open()` no longer takes a `PreviewSession` and starts no session; it counts the visit and returns the share. The "include everything in my current preview" option on Share preview link is gone, since there is no session selection to include.
