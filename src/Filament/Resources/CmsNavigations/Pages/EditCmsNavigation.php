@@ -9,7 +9,8 @@ use Filagora\Cms\Filament\Actions\DraftVariantActions;
 use Filagora\Cms\Filament\Actions\SharePreviewLinkAction;
 use Filagora\Cms\Filament\Resources\CmsNavigations\CmsNavigationResource;
 use Filagora\Cms\Models\CmsNavigation;
-use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Preview\PreviewShares;
+use Filagora\Cms\Preview\PreviewUrl;
 use Filagora\Cms\Services\NavigationDraftDiff;
 use Filagora\Cms\Services\NavigationDrafts;
 use Filagora\Cms\Support\WorkflowLabels;
@@ -105,9 +106,9 @@ class EditCmsNavigation extends EditRecord
                 ->color('gray')
                 ->action(function (): void {
                     app(NavigationDrafts::class)->ensureDraft($this->menu(), auth()->user());
-                    app(PreviewSession::class)->addNavigation($this->menu());
+                    $share = app(PreviewShares::class)->workingDraft(auth()->user(), navigations: [(string) $this->menu()->name]);
 
-                    Notification::make()->success()->title(__('filagora-cms::ui.edit_cms_navigation.previewing_this_menu'))->body(__('filagora-cms::ui.edit_cms_navigation.browse_the_site_this_menu_shows'))->send();
+                    $this->redirect(PreviewUrl::with(url('/'), $share->getRawOriginal('token')));
                 }),
             Action::make('publish')
                 ->label(__('filagora-cms::ui.edit_cms_navigation.publish'))

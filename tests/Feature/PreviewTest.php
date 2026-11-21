@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use Filagora\Cms\Http\Middleware\CarryPreviewToken;
 use Filagora\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
 use Filagora\Cms\Models\CmsNavigation;
 use Filagora\Cms\Models\CmsPage;
 use Filagora\Cms\Models\CmsPreviewShare;
 use Filagora\Cms\Preview\PreviewSession;
 use Filagora\Cms\Preview\PreviewShares;
+use Filagora\Cms\Preview\PreviewUrl;
 use Filagora\Cms\Services\CmsContent;
 use Filagora\Cms\Services\NavigationDrafts;
 use Filagora\Cms\Services\PageDrafts;
@@ -16,6 +18,7 @@ use Filagora\Cms\Tests\Support\TestUser;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Filagora\Entitlements\Registry\EntitlementRegistry;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
@@ -26,12 +29,11 @@ use Symfony\Component\HttpFoundation\Response;
 use function Pest\Laravel\actingAs;
 
 /**
- * A request with a session, as the preview reads it.
+ * The request the resolver reads: a preview is carried by the address alone.
  */
-function browser(): Request
+function requestAt(string $uri = '/'): Request
 {
-    $request = Request::create('/');
-    $request->setLaravelSession(app('session.store'));
+    $request = Request::create($uri);
     app()->instance('request', $request);
     app()->forgetInstance(PreviewSession::class);
     app()->forgetInstance(CmsContent::class);
@@ -70,32 +72,35 @@ function previewMenu(string $name = 'Main'): CmsNavigation
     return CmsNavigation::create(['name' => $name, 'items' => [['label' => 'Live', 'url' => '/live']]])->refresh();
 }
 
+function tokenOf(CmsPreviewShare $share): string
+{
+    return $share->getRawOriginal('token');
+}
+
 // ------------------------------------------------------------------ nothing previewed
 
-it('previews nothing for an ordinary visitor, without touching the database', function () {
-    browser();
+it('previews nothing for an ordinary request, without touching the database', function () {
+    requestAt('/about?page=2');
     previewPage();
     previewMenu();
 
     DB::enableQueryLog();
 
     expect(previewSession()->isActive())->toBeFalse()
-        ->and(previewSession()->items())->toBe([])
+        ->and(previewSession()->token())->toBeNull()
         ->and(previewSession()->pageForSlug('about'))->toBeNull()
         ->and(previewSession()->pageForCustomRoute('/about'))->toBeNull()
         ->and(previewSession()->draftItemsFor('Main'))->toBeNull()
-        ->and(previewSession()->isShared())->toBeFalse()
-        ->and(previewSession()->sharedUntil())->toBeNull()
+        ->and(previewSession()->items())->toBe([])
         ->and(DB::getQueryLog())->toBe([]);
 });
 
-it('works without a session at all', function () {
-    app()->instance('request', Request::create('/'));
-    app()->forgetInstance(PreviewSession::class);
+it('works with no session or cookie at all', function () {
+    [$share] = sharedLink();
+    $request = requestAt('/about?preview='.tokenOf($share));
 
-    expect(previewSession()->isActive())->toBeFalse();
-    previewSession()->clear();
-    previewSession()->remove('page', '1');
+    expect($request->hasSession())->toBeFalse()
+        ->and(previewSession()->isActive())->toBeTrue();
 });
 
 it('keeps a do-nothing resolver for hosts that want none', function () {
@@ -104,135 +109,7 @@ it('keeps a do-nothing resolver for hosts that want none', function () {
     expect($none->pageForSlug('x'))->toBeNull()->and($none->pageForCustomRoute('/x'))->toBeNull()->and($none->draftItemsFor('Main'))->toBeNull();
 });
 
-// ------------------------------------------------------------------ an editor's preview
-
-it('serves an editor the working draft of the pages and menus they added, and nothing else', function () {
-    browser();
-    editor();
-    $page = previewPage();
-    $other = previewPage(['slug' => 'other', 'title' => 'Other']);
-    $menu = previewMenu();
-    app(PageDrafts::class)->saveDraftFields($page, ['title' => 'Staged about', 'slug' => 'about-new', 'custom_route' => '/about-us']);
-    app(PageDrafts::class)->saveDraftFields($other, ['title' => 'Staged other']);
-    app(NavigationDrafts::class)->saveDraft($menu, [['label' => 'Staged', 'url' => '/staged']]);
-
-    previewSession()->addPage($page);
-    previewSession()->addNavigation($menu);
-
-    expect(previewSession()->isActive())->toBeTrue()
-        ->and(previewSession()->isShared())->toBeFalse()
-        ->and(previewSession()->pageForSlug('about-new')?->title)->toBe('Staged about')
-        ->and(previewSession()->pageForSlug('about'))->toBeNull()
-        ->and(previewSession()->pageForSlug('other'))->toBeNull()
-        ->and(previewSession()->pageForCustomRoute('about-us/')?->title)->toBe('Staged about')
-        ->and(array_column(previewSession()->draftItemsFor('Main'), 'label'))->toBe(['Staged'])
-        ->and(previewSession()->draftItemsFor('Footer'))->toBeNull();
-});
-
-it('lets the readers serve the previewed page and menu through the real session', function () {
-    browser();
-    editor();
-    $page = previewPage();
-    $menu = previewMenu();
-    app(PageDrafts::class)->saveDraftFields($page, ['title' => 'Staged about']);
-    app(NavigationDrafts::class)->saveDraft($menu, [['label' => 'Staged', 'url' => '/staged']]);
-
-    expect(app(CmsContent::class)->publishedPageBySlug('about')->title)->toBe('About')
-        ->and(array_column(app(CmsContent::class)->navigationItems('Main'), 'label'))->toBe(['Live']);
-
-    previewSession()->addPage($page);
-    previewSession()->addNavigation($menu);
-    app()->forgetInstance(CmsContent::class);
-
-    expect(app(CmsContent::class)->publishedPageBySlug('about')->title)->toBe('Staged about')
-        ->and(array_column(app(CmsContent::class)->navigationItems('Main'), 'label'))->toBe(['Staged']);
-});
-
-it('previews a menu\'s staged heading and falls back to the live one', function () {
-    browser();
-    editor();
-    $menu = previewMenu();
-    $menu->update(['title' => 'Legal']);
-    app(NavigationDrafts::class)->saveDraft($menu, [['label' => 'Staged', 'url' => '/staged']], null, 'Policies');
-
-    app()->forgetInstance(CmsContent::class);
-    expect(app(CmsContent::class)->navigationTitle('Main'))->toBe('Legal');
-
-    previewSession()->addNavigation($menu);
-    app()->forgetInstance(CmsContent::class);
-    expect(app(CmsContent::class)->navigationTitle('Main'))->toBe('Policies');
-});
-
-it('does not preview for someone who may not, even with a preview stored in their session', function () {
-    browser();
-    $page = previewPage();
-    app(PageDrafts::class)->saveDraftFields($page, ['title' => 'Staged']);
-    request()->session()->put(PreviewSession::SESSION_KEY, ['navigations' => [], 'pages' => [$page->id => true]]);
-
-    actingAs(TestUser::make('Nobody'));
-    expect(previewSession()->isActive())->toBeFalse()
-        ->and(previewSession()->pageForSlug('about'))->toBeNull();
-
-    editor('filagora.cms.manage');
-    expect(previewSession()->isActive())->toBeTrue();
-});
-
-it('lists what is being previewed, with variants an editor can switch between', function () {
-    browser();
-    editor();
-    $page = previewPage();
-    $menu = previewMenu('Footer');
-    app(PageDrafts::class)->createVariant($page, 'Spring');
-    app(NavigationDrafts::class)->ensureDraft($menu);
-    previewSession()->addPage($page);
-    previewSession()->addNavigation($menu);
-
-    $items = previewSession()->items();
-
-    expect($items)->toHaveCount(2)
-        ->and($items[0])->toBe(['type' => 'menu', 'key' => 'Footer', 'label' => 'Footer menu', 'active' => 'Main', 'variants' => ['Main']])
-        ->and($items[1])->toBe(['type' => 'page', 'key' => (string) $page->id, 'label' => 'About', 'active' => 'Spring', 'variants' => ['Spring']]);
-});
-
-it('takes an item out of the preview and leaves it entirely', function () {
-    browser();
-    editor();
-    $page = previewPage();
-    $menu = previewMenu();
-    previewSession()->addPage($page);
-    previewSession()->addNavigation($menu);
-
-    previewSession()->remove('menu', 'Main');
-    expect(previewSession()->draftItemsFor('Main'))->toBeNull()
-        ->and(previewSession()->isActive())->toBeTrue();
-
-    previewSession()->remove('page', (string) $page->id);
-    expect(previewSession()->isActive())->toBeFalse();
-
-    previewSession()->addPage($page);
-    previewSession()->clear();
-    expect(previewSession()->isActive())->toBeFalse();
-});
-
-it('bundles the editor\'s own preview at each item\'s working variant, for sharing', function () {
-    browser();
-    editor();
-    $page = previewPage();
-    $menu = previewMenu();
-    $noDraft = previewPage(['slug' => 'nodraft']);
-    app(PageDrafts::class)->ensureDraft($page, null, 'Spring');
-    app(NavigationDrafts::class)->ensureDraft($menu);
-    previewSession()->addPage($page);
-    previewSession()->addPage($noDraft);
-    previewSession()->addNavigation($menu);
-
-    expect(previewSession()->currentSelection())->toBe(['navigations' => ['Main' => 'Main'], 'pages' => [$page->id => 'Spring']]);
-
-    actingAs(TestUser::make('Nobody'));
-    expect(previewSession()->currentSelection())->toBe(['navigations' => [], 'pages' => []]);
-});
-
-// ------------------------------------------------------------------ shared links
+// ------------------------------------------------------------------ links
 
 it('creates a link pinned to named variants, with a long random token that is never serialised', function () {
     $actor = TestUser::make();
@@ -286,89 +163,260 @@ function sharedLink(?TestUser $actor = null): array
     return [$share, $page, $menu];
 }
 
-it('opens a link: starts the preview for whoever holds it, counts the open, leaves updated_at alone', function () {
+it('shows the pinned drafts for a token in the address, and the live site without it', function () {
     [$share, $page] = sharedLink();
-    $stamp = $share->refresh()->updated_at;
-    $token = $share->getRawOriginal('token');
-    $this->travel(5)->minutes();
-    browser();
 
-    $opened = app(PreviewShares::class)->open($token, previewSession());
+    requestAt('/about?preview='.tokenOf($share));
+    expect(previewSession()->isActive())->toBeTrue()
+        ->and(previewSession()->token())->toBe(tokenOf($share))
+        ->and(previewSession()->expiresAt()?->getTimestamp())->toBe($share->expires_at->getTimestamp())
+        ->and(previewSession()->pageForSlug('about')?->title)->toBe('Main draft')
+        ->and(previewSession()->pageForSlug('spring'))->toBeNull()
+        ->and(previewSession()->draftItemsFor('Main'))->toBe([['label' => 'Staged', 'url' => '/staged']])
+        ->and(previewSession()->items())->toBe([
+            ['type' => 'menu', 'key' => 'Main', 'label' => 'Main menu', 'active' => 'Main'],
+            ['type' => 'page', 'key' => (string) $page->id, 'label' => 'About', 'active' => 'Main'],
+        ]);
+
+    requestAt('/about');
+    expect(previewSession()->isActive())->toBeFalse()
+        ->and(previewSession()->pageForSlug('about'))->toBeNull()
+        ->and(previewSession()->draftItemsFor('Main'))->toBeNull();
+});
+
+it('keeps a pinned variant pinned while editors switch the working draft', function () {
+    [$share, $page] = sharedLink();
+    app(PageDrafts::class)->switchVariant($page, 'Spring');
+
+    requestAt('/about?preview='.tokenOf($share));
+
+    expect(previewSession()->pageForSlug('about')?->title)->toBe('Main draft');
+});
+
+it('serves the live site for an unknown, revoked or expired token, or one that cannot be a token', function () {
+    [$share] = sharedLink();
+    $token = tokenOf($share);
+
+    foreach (['/about?preview=not-a-real-token', '/about?preview='.str_repeat('a', 500), '/about?preview[]='.$token, '/about?preview='] as $uri) {
+        requestAt($uri);
+        expect(previewSession()->isActive())->toBeFalse();
+    }
+
+    $this->travel(4)->days();
+    requestAt('/about?preview='.$token);
+    expect(previewSession()->isActive())->toBeFalse();
+
+    $this->travelBack();
+    app(PreviewShares::class)->revoke($share);
+    requestAt('/about?preview='.$token);
+    expect(previewSession()->isActive())->toBeFalse();
+});
+
+it('looks a token up once per request however often it is asked', function () {
+    [$share] = sharedLink();
+    requestAt('/about?preview='.tokenOf($share));
+
+    DB::enableQueryLog();
+    previewSession()->isActive();
+    previewSession()->isActive();
+    previewSession()->pageForSlug('spring');
+    previewSession()->token();
+
+    $lookups = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'filagora_cms_preview_shares'))->count();
+    expect($lookups)->toBe(1);
+});
+
+it('uses the configured query parameter', function () {
+    config(['filagora-cms.preview.query_parameter' => 'draft']);
+    [$share] = sharedLink();
+
+    requestAt('/about?preview='.tokenOf($share));
+    expect(previewSession()->isActive())->toBeFalse();
+
+    requestAt('/about?draft='.tokenOf($share));
+    expect(previewSession()->isActive())->toBeTrue();
+});
+
+// ------------------------------------------------------------------ an editor's link to the working draft
+
+it('makes a link to the working draft that follows the editor\'s changes, and reuses it', function () {
+    $actor = TestUser::make();
+    $page = previewPage();
+    $menu = previewMenu();
+    $drafts = app(PageDrafts::class);
+    $drafts->saveDraftFields($page, ['title' => 'First edit']);
+    app(NavigationDrafts::class)->saveDraft($menu, [['label' => 'Staged', 'url' => '/staged']]);
+
+    $share = app(PreviewShares::class)->workingDraft($actor, ['Main'], [$page->id]);
+
+    expect($share->label)->toBe('Editor preview')
+        ->and($share->created_by_id)->toBe($actor->id)
+        ->and($share->pages())->toBe([$page->id => true])
+        ->and($share->navigations())->toBe(['Main' => true])
+        ->and($share->expires_at->isFuture())->toBeTrue()
+        ->and(app(PreviewShares::class)->workingDraft($actor, ['Main'], [$page->id])->id)->toBe($share->id)
+        ->and(app(PreviewShares::class)->workingDraft($actor, [], [$page->id])->id)->not->toBe($share->id)
+        ->and(app(PreviewShares::class)->workingDraft(TestUser::make('Other'), ['Main'], [$page->id])->id)->not->toBe($share->id);
+
+    requestAt('/about?preview='.tokenOf($share));
+    expect(previewSession()->pageForSlug('about')?->title)->toBe('First edit');
+
+    $drafts->saveDraftFields($page, ['title' => 'Second edit']);
+    requestAt('/about?preview='.tokenOf($share));
+    expect(previewSession()->pageForSlug('about')?->title)->toBe('Second edit')
+        ->and(previewSession()->items()[1]['active'])->toBe('Main');
+});
+
+it('does not reuse a working-draft link that has been revoked or has expired', function () {
+    $actor = TestUser::make();
+    $page = previewPage();
+    app(PageDrafts::class)->ensureDraft($page);
+    $shares = app(PreviewShares::class);
+
+    $first = $shares->workingDraft($actor, [], [$page->id]);
+    $shares->revoke($first);
+    $second = $shares->workingDraft($actor, [], [$page->id]);
+
+    $this->travel(2)->days();
+
+    expect($second->id)->not->toBe($first->id)
+        ->and($shares->workingDraft($actor, [], [$page->id])->id)->not->toBe($second->id);
+});
+
+// ------------------------------------------------------------------ opening a link
+
+it('opens a link: counts the open, remembers nothing, leaves updated_at alone', function () {
+    [$share] = sharedLink();
+    $stamp = $share->refresh()->updated_at;
+    $this->travel(5)->minutes();
+
+    $opened = app(PreviewShares::class)->open(tokenOf($share));
     $fresh = $share->refresh();
 
     expect($opened?->id)->toBe($share->id)
         ->and($fresh->open_count)->toBe(1)
         ->and($fresh->last_opened_at)->not->toBeNull()
         ->and($fresh->updated_at->equalTo($stamp))->toBeTrue()
-        ->and(previewSession()->isActive())->toBeTrue()
-        ->and(previewSession()->isShared())->toBeTrue()
-        ->and(previewSession()->sharedUntil()->getTimestamp())->toBe($share->expires_at->getTimestamp());
+        ->and(app(PreviewShares::class)->open('unknown'))->toBeNull();
 
-    app(PreviewShares::class)->open($token, previewSession());
-    expect($share->refresh()->open_count)->toBe(2);
-});
-
-it('shows a link\'s holder the pinned variants, not the current working draft', function () {
-    [$share, $page] = sharedLink();
-    browser();
-    app(PreviewShares::class)->open($share->getRawOriginal('token'), previewSession());
-
-    $viaShare = previewSession()->pageForSlug('about');
-
-    expect($viaShare?->title)->toBe('Main draft')
-        ->and(previewSession()->pageForSlug('spring'))->toBeNull()
-        ->and(array_column(previewSession()->draftItemsFor('Main'), 'label'))->toBe(['Staged'])
-        ->and(previewSession()->items())->toBe([
-            ['type' => 'menu', 'key' => 'Main', 'label' => 'Main menu', 'active' => 'Main', 'variants' => []],
-            ['type' => 'page', 'key' => (string) $page->id, 'label' => 'About', 'active' => 'Main', 'variants' => []],
-        ]);
-});
-
-it('ends a link the moment it is revoked or expires', function () {
-    [$share] = sharedLink();
-    browser();
-    app(PreviewShares::class)->open($share->getRawOriginal('token'), previewSession());
-    expect(previewSession()->isActive())->toBeTrue();
-
-    app(PreviewShares::class)->revoke($share);
-    $revokedAt = $share->refresh()->revoked_at;
-    app(PreviewShares::class)->revoke($share);
-    browser();
-    request()->session()->put(PreviewSession::SHARE_SESSION_KEY, $share->id);
-
-    expect(previewSession()->isActive())->toBeFalse()
-        ->and($share->refresh()->revoked_at->equalTo($revokedAt))->toBeTrue()
-        ->and(app(PreviewShares::class)->open($share->getRawOriginal('token'), previewSession()))->toBeNull();
-
-    $expiring = app(PreviewShares::class)->create(TestUser::make(), ['Main' => 'Main'], [], 1);
-    $expiring->update(['expires_at' => now()->subSecond()]);
-    expect(app(PreviewShares::class)->open($expiring->getRawOriginal('token'), previewSession()))->toBeNull()
-        ->and(app(PreviewShares::class)->open('no-such-token', previewSession()))->toBeNull();
-});
-
-it('looks the link up once per request however often it is asked', function () {
-    [$share] = sharedLink();
-    browser();
-    app(PreviewShares::class)->open($share->getRawOriginal('token'), previewSession());
-    DB::enableQueryLog();
-
+    requestAt('/about?preview='.tokenOf($share));
     previewSession()->isActive();
-    previewSession()->isActive();
-    previewSession()->isShared();
-
-    $lookups = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'filagora_cms_preview_shares'))->count();
-    expect($lookups)->toBe(1);
+    expect($share->refresh()->open_count)->toBe(1);
 });
 
-it('lets an editor\'s own preview win over a shared link in the same browser', function () {
-    [$share, $page] = sharedLink();
-    browser();
-    app(PreviewShares::class)->open($share->getRawOriginal('token'), previewSession());
-    editor();
-    previewSession()->addPage($page);
+it('puts a token into an address, ahead of any fragment, and recognises one', function () {
+    expect(PreviewUrl::with('/about', 'abc'))->toBe('/about?preview=abc')
+        ->and(PreviewUrl::with('/about?page=2', 'abc'))->toBe('/about?page=2&preview=abc')
+        ->and(PreviewUrl::with('/about#top', 'abc'))->toBe('/about?preview=abc#top')
+        ->and(PreviewUrl::with('/about?preview=old', 'abc'))->toBe('/about?preview=old')
+        ->and(PreviewUrl::with('https://example.test/a?x=1#y', 'a b'))->toBe('https://example.test/a?x=1&preview=a%20b#y')
+        ->and(PreviewUrl::has('/about?a=1&amp;preview=x'))->toBeTrue()
+        ->and(PreviewUrl::has('/about?a=1'))->toBeFalse();
 
-    expect(previewSession()->isShared())->toBeFalse()
-        ->and(previewSession()->pageForSlug('spring')?->title)->toBe('Spring draft');
+    config(['filagora-cms.preview.query_parameter' => 'draft']);
+    expect(PreviewUrl::with('/about', 'abc'))->toBe('/about?draft=abc');
+});
+
+// ------------------------------------------------------------------ middleware and abilities
+
+it('marks responses uncacheable, noindex and referrer-free only for a request with a token', function () {
+    [$share] = sharedLink();
+    $next = fn (Request $request): Response => new Response('ok');
+
+    requestAt('/about?preview='.tokenOf($share));
+    $marked = app(MarkPreviewResponsesUncacheable::class)->handle(request(), $next);
+
+    expect($marked->headers->get('X-Robots-Tag'))->toBe('noindex, nofollow')
+        ->and($marked->headers->get('Cache-Control'))->toContain('no-store')
+        ->and($marked->headers->get('Cache-Control'))->toContain('private')
+        ->and($marked->headers->get('Referrer-Policy'))->toBe('no-referrer');
+
+    requestAt('/about?preview=wrong');
+    $plain = app(MarkPreviewResponsesUncacheable::class)->handle(request(), $next);
+
+    expect($plain->headers->get('X-Robots-Tag'))->toBeNull()
+        ->and($plain->headers->get('Referrer-Policy'))->toBeNull();
+});
+
+it('keeps the token on links to other pages of the site, and on redirects within it', function () {
+    [$share] = sharedLink();
+    $token = tokenOf($share);
+    $html = <<<'HTML'
+<nav>
+<a href="/pages/one">One</a>
+<a class="x" href='/pages/two?page=2#top'>Two</a>
+<a href="/pages/three?a=1&amp;b=2">Three</a>
+<a href="http://localhost/pages/four">Four</a>
+<a href="pages/five">Five</a>
+<a href="#top">Anchor</a>
+<a href="https://other.example/page">Elsewhere</a>
+<a href="//cdn.example/x">Protocol relative</a>
+<a href="mailto:a@example.test">Mail</a>
+<a href="/files/report.pdf">File</a>
+<a href="/pages/six?preview=old">Has one</a>
+<a href="/staff/dashboard">Staff</a>
+<a href="/logout">Sign out</a>
+<a href="/pages/live" data-preview-skip>Live</a>
+</nav>
+HTML;
+    config(['filagora-cms.preview.carry_token_except' => ['/staff', '/logout']]);
+    $respond = fn (Request $request): Response => new Response($html, 200, ['Content-Type' => 'text/html; charset=UTF-8']);
+
+    requestAt('/about?preview='.$token);
+    $carried = app(CarryPreviewToken::class)->handle(request(), $respond)->getContent();
+
+    expect($carried)
+        ->toContain('<a href="/pages/one?preview='.$token.'">')
+        ->toContain("<a class=\"x\" href='/pages/two?page=2&amp;preview=".$token."#top'>")
+        ->toContain('<a href="/pages/three?a=1&amp;b=2&amp;preview='.$token.'">')
+        ->toContain('<a href="http://localhost/pages/four?preview='.$token.'">')
+        ->toContain('<a href="pages/five?preview='.$token.'">')
+        ->toContain('<a href="#top">')
+        ->toContain('<a href="https://other.example/page">')
+        ->toContain('<a href="//cdn.example/x">')
+        ->toContain('<a href="mailto:a@example.test">')
+        ->toContain('<a href="/files/report.pdf">')
+        ->toContain('<a href="/pages/six?preview=old">')
+        ->toContain('<a href="/staff/dashboard">')
+        ->toContain('<a href="/logout">')
+        ->toContain('<a href="/pages/live" data-preview-skip>');
+
+    $redirect = app(CarryPreviewToken::class)->handle(request(), fn (Request $request) => new RedirectResponse('/pages/moved'));
+    $away = app(CarryPreviewToken::class)->handle(request(), fn (Request $request) => new RedirectResponse('https://other.example/x'));
+
+    expect($redirect->headers->get('Location'))->toBe('/pages/moved?preview='.$token)
+        ->and($away->headers->get('Location'))->toBe('https://other.example/x');
+});
+
+it('leaves every response alone when the request has no valid token, or the response is not HTML', function () {
+    [$share] = sharedLink();
+    $html = '<a href="/pages/one">One</a>';
+    $respond = fn (Request $request): Response => new Response($html, 200, ['Content-Type' => 'text/html']);
+
+    foreach (['/about', '/about?preview=wrong'] as $uri) {
+        requestAt($uri);
+        expect(app(CarryPreviewToken::class)->handle(request(), $respond)->getContent())->toBe($html);
+    }
+
+    requestAt('/about?preview='.tokenOf($share));
+    $json = app(CarryPreviewToken::class)->handle(request(), fn (Request $request) => new Response($html, 200, ['Content-Type' => 'application/json']));
+
+    expect($json->getContent())->toBe($html);
+});
+
+it('puts those middleware in the web group, unless switched off', function () {
+    $groups = app(Router::class)->getMiddlewareGroups();
+
+    expect($groups['web'] ?? [])->toContain(MarkPreviewResponsesUncacheable::class)
+        ->toContain(CarryPreviewToken::class)
+        ->and(config('filagora-cms.preview.uncacheable_middleware'))->toBeTrue()
+        ->and(config('filagora-cms.preview.carry_token'))->toBeTrue();
+});
+
+it('keeps those middleware when the kernel syncs its own groups to the router', function () {
+    app(HttpKernel::class)->appendMiddlewareToGroup('web', 'unrelated');
+
+    expect(app(Router::class)->getMiddlewareGroups()['web'] ?? [])->toContain(MarkPreviewResponsesUncacheable::class)->toContain(CarryPreviewToken::class);
 });
 
 it('says where a visitor to a link should land: the first shared page that still has its variant', function () {
@@ -384,6 +432,16 @@ it('says where a visitor to a link should land: the first shared page that still
     expect($shares->landingPage($share))->toBeNull();
 });
 
+it('lands a visitor on a working-draft page too', function () {
+    $actor = TestUser::make();
+    $page = previewPage();
+    app(PageDrafts::class)->saveDraftFields($page, ['title' => 'Working copy']);
+
+    $share = app(PreviewShares::class)->workingDraft($actor, [], [$page->id]);
+
+    expect(app(PreviewShares::class)->landingPage($share)?->title)->toBe('Working copy');
+});
+
 it('finds only usable links by token', function () {
     [$share] = sharedLink();
     $token = $share->getRawOriginal('token');
@@ -393,222 +451,6 @@ it('finds only usable links by token', function () {
 
     $share->update(['revoked_at' => now()]);
     expect(app(PreviewShares::class)->findUsable($token))->toBeNull();
-});
-
-// ------------------------------------------------------------------ preview in the address
-
-/**
- * A request whose address carries the query, with a session, as the preview reads it.
- */
-function browserAt(string $uri): Request
-{
-    $request = Request::create($uri);
-    $request->setLaravelSession(app('session.store'));
-    app()->instance('request', $request);
-    app()->forgetInstance(PreviewSession::class);
-    app()->forgetInstance(CmsContent::class);
-
-    return $request;
-}
-
-it('shows the pinned drafts for a token in the address, and the live site without it', function () {
-    [$share, $page] = sharedLink();
-    $token = $share->getRawOriginal('token');
-
-    browserAt('/about?preview='.$token);
-    expect(previewSession()->isActive())->toBeTrue()
-        ->and(previewSession()->isFromUrl())->toBeTrue()
-        ->and(previewSession()->isShared())->toBeTrue()
-        ->and(previewSession()->pageForSlug('about')?->title)->toBe('Main draft')
-        ->and(previewSession()->draftItemsFor('Main'))->toBe([['label' => 'Staged', 'url' => '/staged']]);
-
-    browserAt('/about');
-    expect(previewSession()->isActive())->toBeFalse()
-        ->and(previewSession()->isFromUrl())->toBeFalse()
-        ->and(previewSession()->pageForSlug('about'))->toBeNull()
-        ->and(previewSession()->draftItemsFor('Main'))->toBeNull();
-});
-
-it('remembers nothing after a token in the address: no session, no counted open', function () {
-    [$share] = sharedLink();
-
-    $request = browserAt('/about?preview='.$share->getRawOriginal('token'));
-    previewSession()->isActive();
-
-    expect($request->session()->has(PreviewSession::SHARE_SESSION_KEY))->toBeFalse()
-        ->and($request->session()->has(PreviewSession::SESSION_KEY))->toBeFalse()
-        ->and($share->refresh()->open_count)->toBe(0);
-
-    browserAt('/about');
-    expect(previewSession()->isActive())->toBeFalse();
-});
-
-it('works from the address with no session at all', function () {
-    [$share] = sharedLink();
-
-    $request = Request::create('/about?preview='.$share->getRawOriginal('token'));
-    app()->instance('request', $request);
-    app()->forgetInstance(PreviewSession::class);
-
-    expect(previewSession()->isActive())->toBeTrue();
-});
-
-it('serves the live site for an unknown, revoked or expired token, or one that is too long', function () {
-    [$share] = sharedLink();
-    $token = $share->getRawOriginal('token');
-
-    browserAt('/about?preview=not-a-real-token');
-    expect(previewSession()->isActive())->toBeFalse();
-
-    browserAt('/about?preview='.str_repeat('a', 500));
-    expect(previewSession()->isActive())->toBeFalse();
-
-    browserAt('/about?preview[]='.$token);
-    expect(previewSession()->isActive())->toBeFalse();
-
-    $this->travel(4)->days();
-    browserAt('/about?preview='.$token);
-    expect(previewSession()->isActive())->toBeFalse();
-
-    $this->travelBack();
-    app(PreviewShares::class)->revoke($share);
-    browserAt('/about?preview='.$token);
-    expect(previewSession()->isActive())->toBeFalse();
-});
-
-it('looks a token in the address up once per request however often it is asked', function () {
-    [$share] = sharedLink();
-    browserAt('/about?preview='.$share->getRawOriginal('token'));
-
-    DB::enableQueryLog();
-    previewSession()->isActive();
-    previewSession()->isActive();
-    previewSession()->pageForSlug('spring');
-
-    $lookups = collect(DB::getQueryLog())->filter(fn (array $q): bool => str_contains($q['query'], 'filagora_cms_preview_shares'))->count();
-    expect($lookups)->toBe(1);
-});
-
-it('lets a token in the address win over an editor\'s own preview on that request only', function () {
-    [$share, $page] = sharedLink();
-    browserAt('/about');
-    editor();
-    previewSession()->addPage($page);
-    browserAt('/about?preview='.$share->getRawOriginal('token'));
-    expect(previewSession()->isShared())->toBeTrue();
-
-    browserAt('/about');
-    expect(previewSession()->isShared())->toBeFalse()
-        ->and(previewSession()->isActive())->toBeTrue();
-});
-
-it('shows an editor the live site for one request with ?preview=off, and keeps their preview', function () {
-    $page = previewPage();
-    app(PageDrafts::class)->saveDraftFields($page, ['title' => 'Staged title']);
-    browser();
-    editor();
-    previewSession()->addPage($page);
-
-    browserAt('/about?preview=off');
-    expect(previewSession()->isViewingLive())->toBeTrue()
-        ->and(previewSession()->isActive())->toBeFalse()
-        ->and(previewSession()->pageForSlug('about'))->toBeNull()
-        ->and(previewSession()->items())->toBe([]);
-
-    browserAt('/about');
-    expect(previewSession()->isViewingLive())->toBeFalse()
-        ->and(previewSession()->isActive())->toBeTrue()
-        ->and(previewSession()->pageForSlug('about')?->title)->toBe('Staged title');
-});
-
-it('shows the live site for ?preview=off to someone holding a shared link, then returns them to it', function () {
-    [$share] = sharedLink();
-    browser();
-    app(PreviewShares::class)->open($share->getRawOriginal('token'), previewSession());
-
-    browserAt('/about?preview=off');
-    expect(previewSession()->isViewingLive())->toBeTrue()
-        ->and(previewSession()->isActive())->toBeFalse();
-
-    browserAt('/about');
-    expect(previewSession()->isViewingLive())->toBeFalse()
-        ->and(previewSession()->isShared())->toBeTrue();
-});
-
-it('does not touch the database for an ordinary request when the address has no preview', function () {
-    browserAt('/about?page=2');
-    previewPage();
-
-    DB::enableQueryLog();
-    previewSession()->isActive();
-    previewSession()->isViewingLive();
-    previewSession()->pageForSlug('about');
-
-    expect(DB::getQueryLog())->toBe([]);
-});
-
-it('uses the configured query parameter', function () {
-    config(['filagora-cms.preview.query_parameter' => 'draft']);
-    [$share] = sharedLink();
-
-    browserAt('/about?preview='.$share->getRawOriginal('token'));
-    expect(previewSession()->isActive())->toBeFalse();
-
-    browserAt('/about?draft='.$share->getRawOriginal('token'));
-    expect(previewSession()->isActive())->toBeTrue();
-});
-
-it('marks a token or live-override response uncacheable, noindex and referrer-free', function () {
-    [$share] = sharedLink();
-    $middleware = app(MarkPreviewResponsesUncacheable::class);
-    $next = fn (Request $request): Response => new Response('ok');
-
-    foreach (['/about?preview='.$share->getRawOriginal('token'), '/about?preview=off'] as $uri) {
-        browserAt($uri);
-        $request = request();
-        $marked = app()->make(MarkPreviewResponsesUncacheable::class)->handle($request, $next);
-
-        expect($marked->headers->get('X-Robots-Tag'))->toBe('noindex, nofollow')
-            ->and($marked->headers->get('Cache-Control'))->toContain('no-store')
-            ->and($marked->headers->get('Referrer-Policy'))->toBe('no-referrer');
-    }
-
-    browserAt('/about');
-    $plain = app()->make(MarkPreviewResponsesUncacheable::class)->handle(request(), $next);
-    expect($plain->headers->get('Referrer-Policy'))->toBeNull();
-});
-
-// ------------------------------------------------------------------ middleware and abilities
-
-it('marks responses uncacheable and noindex only while a preview is in effect', function () {
-    browser();
-    editor();
-    $page = previewPage();
-    $middleware = new MarkPreviewResponsesUncacheable(previewSession());
-    $next = fn () => new Response('ok');
-
-    $quiet = $middleware->handle(Request::create('/'), $next);
-    expect($quiet->headers->has('X-Robots-Tag'))->toBeFalse();
-
-    previewSession()->addPage($page);
-    $marked = $middleware->handle(Request::create('/'), $next);
-
-    expect($marked->headers->get('X-Robots-Tag'))->toBe('noindex, nofollow')
-        ->and($marked->headers->get('Cache-Control'))->toContain('no-store')
-        ->and($marked->headers->get('Cache-Control'))->toContain('private');
-});
-
-it('puts that middleware in the web group, unless switched off', function () {
-    $groups = app(Router::class)->getMiddlewareGroups();
-
-    expect($groups['web'] ?? [])->toContain(MarkPreviewResponsesUncacheable::class)
-        ->and(config('filagora-cms.preview.uncacheable_middleware'))->toBeTrue();
-});
-
-it('keeps that middleware when the kernel syncs its own groups to the router', function () {
-    app(HttpKernel::class)->appendMiddlewareToGroup('web', 'unrelated');
-
-    expect(app(Router::class)->getMiddlewareGroups()['web'] ?? [])->toContain(MarkPreviewResponsesUncacheable::class);
 });
 
 it('declares the two abilities as entitlements and gates them', function () {

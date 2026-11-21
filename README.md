@@ -106,30 +106,31 @@ Pages, blocks, navigations, media and a draft, version, schedule and preview wor
 
 These services do not check who may call them; the Filament screens do.
 
-- **Previews.** `PreviewSession` is the `PreviewResolver` the readers use, so a browser that is
-  previewing sees draft menus and pages at their normal public addresses while everything else
-  shows live content. Two things start a preview: an editor adding items (`addPage`,
-  `addNavigation`; each served from its working draft; needs `filagora.cms.manage` or
-  `filagora.cms.preview`), or a **shared preview link**.
-  - `PreviewShares::create()` bundles chosen menus and pages, each pinned to a named variant, with
-    an expiry in days and a label. The link's token is long, random and never serialised.
-    `open($token, $session)` starts the preview for whoever holds it and counts the open;
-    `revoke()` ends it, and so does expiry, at the next request. The holder previews in their own
-    browser session; nothing is made public. `landingPage()` says where to send them.
-  - **In the address.** `/privacy?preview=TOKEN` shows that share's pinned drafts for that one
-    request: no session is started, no open is counted, and `/privacy` without it is the live
-    page. `/privacy?preview=off` shows the live page for one request even while a preview is on,
-    so the two can be compared side by side. An unknown, revoked or expired token is served live.
-    The address wins over an editor's own preview for that request. A draft menu appears on every
-    page, so to browse the whole site in preview open the share link (`open()`) instead.
-    `isFromUrl()` and `isViewingLive()` tell a banner which applies. The parameter name is
-    `filagora-cms.preview.query_parameter`. Tokens in an address reach logs and history: keep
-    shares short-lived, and keep an edge cache from storing any request that has the parameter.
-  - `items()` describes what is being previewed (for a banner) and `currentSelection()` bundles an
-    editor's own preview for sharing.
-  - `MarkPreviewResponsesUncacheable` marks every response `no-store, private` and
-    `noindex, nofollow` while a preview is in effect. It is added to the `web` group unless you
-    set `filagora-cms.preview.uncacheable_middleware` to false.
+- **Previews.** A preview is carried by the address and nothing else: `/privacy?preview=TOKEN`
+  shows the draft menus and pages that preview link names, and `/privacy` without the parameter is
+  always the live page. No session or cookie is used, so the two can be compared in two tabs.
+  `PreviewSession` is the `PreviewResolver` the readers use; it reads the token from the request.
+  - A link names each menu and page either as a **draft variant** (pinned, so it does not change
+    when an editor switches the working draft) or as the **working draft** as it is now.
+    `PreviewShares::create()` bundles chosen menus and pages at named variants, with an expiry in
+    days and a label; `workingDraft()` makes (or reuses) an editor's link to the working draft of
+    menus and pages, valid for a day, which is what a Preview button should use. Tokens are long,
+    random and never serialised. `open($token)` counts a visit and returns the share (send the
+    visitor to `landingPage()` with `PreviewUrl::with()`); `revoke()` ends a link, and so does
+    expiry, at the next request.
+  - `PreviewUrl::with($url, $token)` puts the token into an address.
+  - `CarryPreviewToken` keeps the token on links to other pages of the site and on redirects
+    within it, so a draft menu can be followed from page to page. Links to other sites, in-page
+    anchors and files are left alone, and so is an anchor with a `data-preview-skip` attribute (use it for a banner's "view the live page" link); list path prefixes to skip, such as the staff area, in
+    `filagora-cms.preview.carry_token_except`. Switch it off with `preview.carry_token`.
+  - `MarkPreviewResponsesUncacheable` marks every response to a request with a token `no-store,
+    private`, `noindex, nofollow` and `Referrer-Policy: no-referrer`. Both middleware are added to
+    the `web` group unless switched off in config.
+  - `items()` describes what is being previewed (for a banner), `token()` and `expiresAt()` give the
+    token and when it lapses. The parameter's name is `filagora-cms.preview.query_parameter`.
+  - Tokens in an address reach server logs, browser history and anything copied: keep links
+    short-lived, keep an edge cache from storing any request that has the parameter, and keep the
+    parameter out of access logs.
   - The routes, the controllers and the banner are yours: this package has no frontend.
 - **Search** (with [`filagora/filagora-search`](https://github.com/filagora/filagora-search)
   installed). Published pages become a search index (title, excerpt, SEO fields, slug and the text

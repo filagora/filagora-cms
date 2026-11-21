@@ -31,8 +31,6 @@ return [
         'draft_variant_to_show' => 'Draft variant to show',
         'label_only_you_see_it' => 'Label (only you see it)',
         'expires_after' => 'Expires after',
-        'also_include_everything_in_my_current' => 'Also include everything in my current preview',
-        'adds_the_menus_and_pages_in' => 'Adds the menus and pages in your preview, each at its current working draft.',
         'cannot_create_link' => 'Cannot create link',
         'preview_link_created' => 'Preview link created',
     ],
@@ -157,8 +155,6 @@ return [
     'edit_cms_navigation' => [
         'save_draft' => 'Save draft',
         'preview' => 'Preview',
-        'previewing_this_menu' => 'Previewing this menu',
-        'browse_the_site_this_menu_shows' => 'Browse the site: this menu shows its draft until you leave the preview.',
         'publish' => 'Publish',
         'publish_menu_changes' => 'Publish menu changes',
         'version_summary' => 'Version summary',

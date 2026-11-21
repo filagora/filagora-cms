@@ -10,12 +10,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * While a browser is previewing unpublished menus or pages, every page it loads can contain
- * draft content at a normal public URL. Make sure no shared cache stores such a response and no
- * crawler indexes it, whatever caching rules are added in front of the application later. The
- * same goes for a request that asks for the live site beside a preview (`?preview=off`), which
- * is a duplicate of a public address. Referrers are withheld so a token in the address is not
- * passed to other sites.
+ * A response to a request that carries a preview token can contain draft content at a normal
+ * public address. Make sure no shared cache stores it and no crawler indexes it, whatever caching
+ * rules are added in front of the application later, and withhold the referrer so the token in
+ * the address is not passed on to other sites.
  */
 class MarkPreviewResponsesUncacheable
 {
@@ -25,7 +23,7 @@ class MarkPreviewResponsesUncacheable
     {
         $response = $next($request);
 
-        if ($this->preview->isActive() || $this->preview->isViewingLive()) {
+        if ($this->preview->isActive()) {
             $response->headers->set('Cache-Control', 'no-store, private');
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
             $response->headers->set('Referrer-Policy', 'no-referrer');

@@ -5,6 +5,21 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking:** a preview is carried by the address alone. `/page?preview=TOKEN` shows the drafts a preview link names, and the same address without it is always the live page; no session or cookie is used. The editors' Preview buttons now make (or reuse) a link to the **working draft** of the page or menu, valid for a day, and open its address with the token. `PreviewShares::open()` no longer takes a `PreviewSession` and starts no session; it counts the visit and returns the share. The "include everything in my current preview" option on Share preview link is gone, since there is no session selection to include.
+- A link can name a menu or page as `true`, the working draft as it is now, as well as a pinned variant.
+- `MarkPreviewResponsesUncacheable` now acts on a request with a token, and also sends `Referrer-Policy: no-referrer`.
+
+### Added
+
+- `CarryPreviewToken`, added to the `web` group (switch off with `filagora-cms.preview.carry_token`): while a request has a token, links to other pages of the site and redirects within it keep it, so a draft menu can be followed across the site. `filagora-cms.preview.carry_token_except` lists path prefixes to leave alone, and an anchor with `data-preview-skip` is never changed.
+- `PreviewShares::workingDraft()`, `PreviewUrl::with()` and `PreviewUrl::has()`, and `PreviewSession::token()` and `expiresAt()`.
+
+### Removed
+
+- The session preview: `PreviewSession::addPage()`, `addNavigation()`, `remove()`, `clear()`, `startShare()`, `currentSelection()`, `isShared()`, `sharedUntil()`, `isFromUrl()`, `isViewingLive()`, the `SESSION_KEY` and `SHARE_SESSION_KEY` constants, and `?preview=off` (a request without the parameter is the live page).
+
 ## [0.3.8] - 2026-11-20
 
 ### Added

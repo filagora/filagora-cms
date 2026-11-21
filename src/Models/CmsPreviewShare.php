@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Route;
 
 /**
  * A link that shows chosen draft menus and pages to someone without a login.
- * `items` is `{"navigations": {menu name: variant name}, "pages": {page id: variant name}}`.
+ * `items` is `{"navigations": {menu name: variant name|true}, "pages": {page id: variant name|true}}`;
+ * `true` is the working draft as it is now.
  *
  * @property int $id
  * @property string $token
@@ -93,9 +94,9 @@ class CmsPreviewShare extends Model
     }
 
     /**
-     * The menus in the share, as menu name => variant name.
+     * The menus in the share, as menu name => variant name, or `true` for the working draft.
      *
-     * @return array<string, string|null>
+     * @return array<string, string|bool|null>
      */
     public function navigations(): array
     {
@@ -103,9 +104,9 @@ class CmsPreviewShare extends Model
     }
 
     /**
-     * The pages in the share, as page id => variant name.
+     * The pages in the share, as page id => variant name, or `true` for the working draft.
      *
-     * @return array<int|string, string|null>
+     * @return array<int|string, string|bool|null>
      */
     public function pages(): array
     {

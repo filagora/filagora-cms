@@ -6,12 +6,10 @@ namespace Filagora\Cms\Filament\Actions;
 
 use Closure;
 use Filagora\Cms\Models\CmsNavigation;
-use Filagora\Cms\Preview\PreviewSession;
 use Filagora\Cms\Preview\PreviewShares;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
@@ -47,15 +45,10 @@ final class SharePreviewLinkAction
                     ->label(__('filagora-cms::ui.share_preview_link_action.expires_after'))
                     ->options([1 => '1 day', 3 => '3 days', 7 => '7 days', 30 => '30 days'])
                     ->required(),
-                Toggle::make('include_session')
-                    ->label(__('filagora-cms::ui.share_preview_link_action.also_include_everything_in_my_current'))
-                    ->helperText(__('filagora-cms::ui.share_preview_link_action.adds_the_menus_and_pages_in')),
             ])
             ->action(function (array $data) use ($record): void {
                 $model = $record();
-                $selection = ($data['include_session'] ?? false)
-                    ? app(PreviewSession::class)->currentSelection()
-                    : ['navigations' => [], 'pages' => []];
+                $selection = ['navigations' => [], 'pages' => []];
 
                 if ($model instanceof CmsNavigation) {
                     $selection['navigations'][(string) $model->name] = (string) $data['variant'];

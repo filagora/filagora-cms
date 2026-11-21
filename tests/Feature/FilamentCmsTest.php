@@ -33,14 +33,12 @@ use Filagora\Cms\Models\CmsPage;
 use Filagora\Cms\Models\CmsPageDraft;
 use Filagora\Cms\Models\CmsPreviewShare;
 use Filagora\Cms\Models\CmsTag;
-use Filagora\Cms\Preview\PreviewSession;
 use Filagora\Cms\Preview\PreviewShares;
 use Filagora\Cms\Services\NavigationDrafts;
 use Filagora\Cms\Services\PageDrafts;
 use Filagora\Cms\Tests\Support\TestUser;
 use Filagora\Entitlements\Models\UserEntitlementGrant;
 use Filament\Facades\Filament;
-use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -234,19 +232,18 @@ it('manages draft variants from the editor', function () {
     $component->callAction('new_variant', ['name' => 'original', 'from_live' => false])->assertNotified('Cannot change variants');
 });
 
-it('previews the draft: puts the page into the preview session and sends the editor to its address', function () {
+it('previews the draft: makes a link to the working draft and sends the editor to its tokened address', function () {
     cmsEditor();
-    $request = Request::create('/');
-    $request->setLaravelSession(app('session.store'));
-    app()->instance('request', $request);
     $page = livePageWithBlocks();
     app(PageDrafts::class)->saveDraftFields($page, ['slug' => 'about-new']);
 
-    Livewire::test(EditCmsPage::class, ['record' => $page->getKey()])
-        ->callAction('preview')
-        ->assertRedirect(url('/pages/about-new'));
+    $component = Livewire::test(EditCmsPage::class, ['record' => $page->getKey()])->callAction('preview');
 
-    expect(session(PreviewSession::SESSION_KEY)['pages'])->toBe([$page->id => true]);
+    $share = CmsPreviewShare::query()->latest('id')->firstOrFail();
+
+    expect($share->pages())->toBe([$page->id => true])
+        ->and($share->label)->toBe('Editor preview');
+    $component->assertRedirect(url('/pages/about-new?preview='.$share->getRawOriginal('token')));
 });
 
 it('creates a preview link for a variant from the editor', function () {
@@ -255,7 +252,7 @@ it('creates a preview link for a variant from the editor', function () {
     app(PageDrafts::class)->ensureDraft($page);
 
     Livewire::test(EditCmsPage::class, ['record' => $page->getKey()])
-        ->callAction('share_preview', ['variant' => 'Main', 'days' => 3, 'label' => 'For the board', 'include_session' => false])
+        ->callAction('share_preview', ['variant' => 'Main', 'days' => 3, 'label' => 'For the board'])
         ->assertNotified('Preview link created');
 
     $share = CmsPreviewShare::sole();
@@ -433,16 +430,16 @@ it('schedules, discards and restores a menu from its versions', function () {
         ->and(CmsNavigationDraft::sole()->is_dirty)->toBeTrue();
 });
 
-it('previews a menu from its editor', function () {
+it('previews a menu from its editor: a link to its working draft, opened at the home page', function () {
     cmsEditor();
-    $request = Request::create('/');
-    $request->setLaravelSession(app('session.store'));
-    app()->instance('request', $request);
     $menu = CmsNavigation::create(['name' => 'header', 'items' => []]);
 
-    Livewire::test(EditCmsNavigation::class, ['record' => $menu->getKey()])->callAction('preview')->assertNotified('Previewing this menu');
+    $component = Livewire::test(EditCmsNavigation::class, ['record' => $menu->getKey()])->callAction('preview');
 
-    expect(session(PreviewSession::SESSION_KEY)['navigations'])->toBe(['header' => true]);
+    $share = CmsPreviewShare::query()->latest('id')->firstOrFail();
+
+    expect($share->navigations())->toBe(['header' => true]);
+    $component->assertRedirect(url('/').'?preview='.$share->getRawOriginal('token'));
 });
 
 // ------------------------------------------------------------------ tags

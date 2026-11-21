@@ -18,10 +18,12 @@ use Illuminate\Validation\ValidationException;
 /**
  * Creates, opens and revokes shareable preview links. A link pins each menu and page to a named
  * draft variant, so what the recipient sees does not change when an editor switches the working
- * draft. Nothing is made public: the recipient previews in their own browser session.
+ * draft. Nothing is made public: the recipient previews only at addresses that carry the token.
  */
 class PreviewShares
 {
+    public const EDITOR_LABEL = 'Editor preview';
+
     public function __construct(
         private readonly PageDrafts $pageDrafts,
         private readonly NavigationDrafts $navigationDrafts,
@@ -60,6 +62,42 @@ class PreviewShares
     }
 
     /**
+     * A link to the working draft of the given menus and pages, as it is now and as it changes,
+     * for an editor's Preview button. A usable link the same editor already made for the same
+     * items is reused, so clicking Preview repeatedly does not pile up links.
+     *
+     * @param  list<string>  $navigations  menu names
+     * @param  list<int>  $pages  page ids
+     * @param  int  $hours  How long a new link works (at least one).
+     */
+    public function workingDraft(Authenticatable $actor, array $navigations = [], array $pages = [], int $hours = 24): CmsPreviewShare
+    {
+        $items = [
+            'navigations' => array_fill_keys($navigations, true),
+            'pages' => array_fill_keys($pages, true),
+        ];
+
+        /** @var Builder<CmsPreviewShare> $shares */
+        $shares = Models::class('preview_share')::query();
+
+        /** @var CmsPreviewShare $share */
+        foreach ($shares->usable()->where('created_by_id', $actor->getAuthIdentifier())->where('label', self::EDITOR_LABEL)->latest('id')->limit(20)->get() as $share) {
+            if ($share->items === $items) {
+                return $share;
+            }
+        }
+
+        /** @var CmsPreviewShare */
+        return Models::class('preview_share')::query()->create([
+            'token' => Str::random(48),
+            'label' => self::EDITOR_LABEL,
+            'items' => $items,
+            'expires_at' => now()->addHours(max(1, $hours)),
+            'created_by_id' => $actor->getAuthIdentifier(),
+        ]);
+    }
+
+    /**
      * The share for this token, if it is not revoked or expired.
      */
     public function findUsable(string $token): ?CmsPreviewShare
@@ -71,10 +109,11 @@ class PreviewShares
     }
 
     /**
-     * Opens a link: starts the preview in this browser session and counts the open. Null when
-     * the token is unknown, revoked or expired.
+     * Opens a link: counts the open and returns the share, for the host to send the visitor to
+     * the previewed address (see `landingPage()` and `PreviewUrl::with()`). Null when the token
+     * is unknown, revoked or expired. Nothing is remembered about the visitor.
      */
-    public function open(string $token, PreviewSession $session): ?CmsPreviewShare
+    public function open(string $token): ?CmsPreviewShare
     {
         $share = $this->findUsable($token);
 
@@ -82,7 +121,6 @@ class PreviewShares
             return null;
         }
 
-        $session->startShare($share);
         $this->recordOpen($share);
 
         return $share;
@@ -108,7 +146,12 @@ class PreviewShares
         foreach ($share->pages() as $id => $variant) {
             /** @var CmsPage|null $page */
             $page = Models::class('page')::query()->find((int) $id);
-            $preview = $page !== null && is_string($variant) ? $this->pageDrafts->previewPageVariant($page, $variant) : null;
+            $preview = match (true) {
+                $page === null => null,
+                is_string($variant) => $this->pageDrafts->previewPageVariant($page, $variant),
+                $variant === true => $this->pageDrafts->previewPage($page),
+                default => null,
+            };
 
             if ($preview !== null) {
                 return $preview;

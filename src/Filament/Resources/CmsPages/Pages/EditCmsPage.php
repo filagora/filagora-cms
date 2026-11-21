@@ -11,7 +11,8 @@ use Filagora\Cms\Filament\Actions\DraftVariantActions;
 use Filagora\Cms\Filament\Actions\SharePreviewLinkAction;
 use Filagora\Cms\Filament\Resources\CmsPages\CmsPageResource;
 use Filagora\Cms\Models\CmsPage;
-use Filagora\Cms\Preview\PreviewSession;
+use Filagora\Cms\Preview\PreviewShares;
+use Filagora\Cms\Preview\PreviewUrl;
 use Filagora\Cms\Services\PageDraftDiff;
 use Filagora\Cms\Services\PageDrafts;
 use Filagora\Cms\Support\WorkflowLabels;
@@ -106,9 +107,9 @@ class EditCmsPage extends EditRecord
                 ->action(function (): void {
                     $drafts = app(PageDrafts::class);
                     $drafts->ensureDraft($this->page(), auth()->user());
-                    app(PreviewSession::class)->addPage($this->page());
+                    $share = app(PreviewShares::class)->workingDraft(auth()->user(), pages: [(int) $this->page()->getKey()]);
 
-                    $this->redirect(app(PageUrlResolver::class)->urlFor($drafts->previewPage($this->page())));
+                    $this->redirect(PreviewUrl::with(app(PageUrlResolver::class)->urlFor($drafts->previewPage($this->page())), $share->getRawOriginal('token')));
                 }),
             Action::make('publish')
                 ->label(__('filagora-cms::ui.edit_cms_page.publish'))

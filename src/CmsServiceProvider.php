@@ -9,6 +9,7 @@ use Filagora\Cms\BlockTypes\GenericBlockTypes;
 use Filagora\Cms\Console\PublishDueCommand;
 use Filagora\Cms\Contracts\PageUrlResolver;
 use Filagora\Cms\Contracts\PreviewResolver;
+use Filagora\Cms\Http\Middleware\CarryPreviewToken;
 use Filagora\Cms\Http\Middleware\MarkPreviewResponsesUncacheable;
 use Filagora\Cms\Media\MediaAssets;
 use Filagora\Cms\Models\CmsBlock;
@@ -156,11 +157,22 @@ class CmsServiceProvider extends ServiceProvider
     }
 
     /**
-     * Previews must never be cached or indexed: add the middleware to the `web` group.
+     * Previews must never be cached or indexed, and a token has to follow the visitor from page to
+     * page: add both middleware to the `web` group.
      */
     private function registerPreviewMiddleware(): void
     {
-        if (! config('filagora-cms.preview.uncacheable_middleware', true)) {
+        $middleware = [];
+
+        if (config('filagora-cms.preview.uncacheable_middleware', true)) {
+            $middleware[] = MarkPreviewResponsesUncacheable::class;
+        }
+
+        if (config('filagora-cms.preview.carry_token', true)) {
+            $middleware[] = CarryPreviewToken::class;
+        }
+
+        if ($middleware === []) {
             return;
         }
 
@@ -170,13 +182,15 @@ class CmsServiceProvider extends ServiceProvider
         // The HTTP kernel owns the middleware groups and copies them to the router whenever one
         // changes, so a group edited on the router alone is overwritten by the next copy and the
         // middleware silently disappears. Go through the kernel when it can take the change.
-        if (method_exists($kernel, 'appendMiddlewareToGroup')) {
-            $kernel->appendMiddlewareToGroup('web', MarkPreviewResponsesUncacheable::class);
+        foreach ($middleware as $class) {
+            if (method_exists($kernel, 'appendMiddlewareToGroup')) {
+                $kernel->appendMiddlewareToGroup('web', $class);
 
-            return;
+                continue;
+            }
+
+            $this->app->make(Router::class)->pushMiddlewareToGroup('web', $class);
         }
-
-        $this->app->make(Router::class)->pushMiddlewareToGroup('web', MarkPreviewResponsesUncacheable::class);
     }
 
     private function registerNavigationGroup(): void
