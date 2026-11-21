@@ -121,7 +121,7 @@ These services do not check who may call them; the Filament screens do.
   - `PreviewUrl::with($url, $token)` puts the token into an address.
   - `CarryPreviewToken` keeps the token on links to other pages of the site and on redirects
     within it, so a draft menu can be followed from page to page. Links to other sites, in-page
-    anchors and files are left alone; list path prefixes to skip, such as the staff area, in
+    anchors and files are left alone, and so is an anchor with a `data-preview-skip` attribute (use it for a banner's "view the live page" link); list path prefixes to skip, such as the staff area, in
     `filagora-cms.preview.carry_token_except`. Switch it off with `preview.carry_token`.
   - `MarkPreviewResponsesUncacheable` marks every response to a request with a token `no-store,
     private`, `noindex, nofollow` and `Referrer-Policy: no-referrer`. Both middleware are added to

@@ -356,6 +356,7 @@ it('keeps the token on links to other pages of the site, and on redirects within
 <a href="/pages/six?preview=old">Has one</a>
 <a href="/staff/dashboard">Staff</a>
 <a href="/logout">Sign out</a>
+<a href="/pages/live" data-preview-skip>Live</a>
 </nav>
 HTML;
     config(['filagora-cms.preview.carry_token_except' => ['/staff', '/logout']]);
@@ -377,7 +378,8 @@ HTML;
         ->toContain('<a href="/files/report.pdf">')
         ->toContain('<a href="/pages/six?preview=old">')
         ->toContain('<a href="/staff/dashboard">')
-        ->toContain('<a href="/logout">');
+        ->toContain('<a href="/logout">')
+        ->toContain('<a href="/pages/live" data-preview-skip>');
 
     $redirect = app(CarryPreviewToken::class)->handle(request(), fn (Request $request) => new RedirectResponse('/pages/moved'));
     $away = app(CarryPreviewToken::class)->handle(request(), fn (Request $request) => new RedirectResponse('https://other.example/x'));

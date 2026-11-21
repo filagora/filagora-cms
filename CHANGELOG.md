@@ -13,7 +13,7 @@ All notable changes to this package are documented here. The format follows
 
 ### Added
 
-- `CarryPreviewToken`, added to the `web` group (switch off with `filagora-cms.preview.carry_token`): while a request has a token, links to other pages of the site and redirects within it keep it, so a draft menu can be followed across the site. `filagora-cms.preview.carry_token_except` lists path prefixes to leave alone.
+- `CarryPreviewToken`, added to the `web` group (switch off with `filagora-cms.preview.carry_token`): while a request has a token, links to other pages of the site and redirects within it keep it, so a draft menu can be followed across the site. `filagora-cms.preview.carry_token_except` lists path prefixes to leave alone, and an anchor with `data-preview-skip` is never changed.
 - `PreviewShares::workingDraft()`, `PreviewUrl::with()` and `PreviewUrl::has()`, and `PreviewSession::token()` and `expiresAt()`.
 
 ### Removed

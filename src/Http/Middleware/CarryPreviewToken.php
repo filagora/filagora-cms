@@ -18,10 +18,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * pages of this site in the HTML, and redirects within it, get the token too. That is what lets a
  * draft menu, or a draft page that other pages link to, be followed from page to page with
  * nothing stored in a session. Links to other sites, in-page anchors, files and the staff area are
- * left alone, and so is any request without a token.
+ * left alone, and so is any request without a token. An anchor carrying `data-preview-skip` is
+ * left alone too.
  */
 class CarryPreviewToken
 {
+    /** An anchor with this attribute is left alone, such as a banner's "view the live page" link. */
+    public const SKIP_ATTRIBUTE = 'data-preview-skip';
+
     private const FILE_EXTENSIONS = 'css|js|map|png|jpe?g|gif|svg|webp|avif|ico|pdf|zip|gz|woff2?|ttf|eot|xml|json|txt|mp4|webm';
 
     public function __construct(private readonly PreviewSession $preview) {}
@@ -59,13 +63,19 @@ class CarryPreviewToken
     private function carry(string $html, string $token, Request $request): string
     {
         return (string) preg_replace_callback(
-            '/(<a\b[^>]*?\shref=)(["\'])(.*?)\2/is',
-            function (array $match) use ($token, $request): string {
-                $href = $match[3];
+            '/<a\b[^>]*>/is',
+            function (array $tag) use ($token, $request): string {
+                if (stripos($tag[0], self::SKIP_ATTRIBUTE) !== false) {
+                    return $tag[0];
+                }
 
-                return $this->shouldCarry($href, $request)
-                    ? $match[1].$match[2].$this->withToken($href, $token).$match[2]
-                    : $match[0];
+                return (string) preg_replace_callback(
+                    '/(\shref=)(["\'])(.*?)\2/is',
+                    fn (array $match): string => $this->shouldCarry($match[3], $request)
+                        ? $match[1].$match[2].$this->withToken($match[3], $token).$match[2]
+                        : $match[0],
+                    $tag[0],
+                );
             },
             $html,
         );
