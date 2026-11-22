@@ -117,6 +117,19 @@ it('lists pages with their state, and filters by status', function () {
         ->assertCanNotSeeTableRecords([$live]);
 });
 
+it('hides the wide optional columns of the pages list by default, so it fits a laptop screen', function () {
+    cmsEditor();
+    livePageWithBlocks();
+
+    $table = Livewire::test(ListCmsPages::class)->instance()->getTable();
+
+    expect($table->getColumn('slug')->isToggledHiddenByDefault())->toBeTrue()
+        ->and($table->getColumn('custom_route')->isToggledHiddenByDefault())->toBeTrue()
+        ->and($table->getColumn('tags.name')->isToggledHiddenByDefault())->toBeTrue()
+        ->and($table->getColumn('title')->isToggleable())->toBeFalse()
+        ->and($table->getColumn('status')->isToggleable())->toBeFalse();
+});
+
 it('creates a page as an unpublished draft with its tags', function () {
     cmsEditor();
     $tag = CmsTag::create(['name' => 'News', 'slug' => 'news']);
