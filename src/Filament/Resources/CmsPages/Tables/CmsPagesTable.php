@@ -24,16 +24,16 @@ class CmsPagesTable
             ->modifyQueryUsing(fn (Builder $query): Builder => $query->with(['draft', 'tags']))
             ->columns([
                 TextColumn::make('title')->searchable()->sortable(),
-                TextColumn::make('slug')->searchable(),
-                TextColumn::make('custom_route')->placeholder('-')->searchable(),
+                TextColumn::make('slug')->searchable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('custom_route')->placeholder('-')->searchable()->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')
                     ->label(__('filagora-cms::ui.cms_pages_table.state'))
                     ->badge()
                     ->state(fn (CmsPage $record): string => app(WorkflowLabels::class)->pageBadge($record)['label'])
                     ->color(fn (CmsPage $record): string => app(WorkflowLabels::class)->pageBadge($record)['color']),
-                TextColumn::make('published_at')->dateTime()->sortable(),
-                TextColumn::make('tags.name')->badge(),
-                TextColumn::make('updated_at')->dateTime()->sortable(),
+                TextColumn::make('published_at')->dateTime()->sortable()->toggleable(),
+                TextColumn::make('tags.name')->badge()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('status')->options(CmsPageStatus::options()),
