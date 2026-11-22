@@ -5,6 +5,8 @@ All notable changes to this package are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-22
+
 ### Fixed
 
 - The Pages list fits a 1440px screen without zooming out: the slug, custom route and tags columns are hidden by default, and the editor can toggle any of the optional columns from the column picker.
